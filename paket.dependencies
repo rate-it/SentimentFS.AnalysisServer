@@ -1,4 +1,5 @@
 source https://www.myget.org/F/machine-learning/api/v3/index.json
 source https://api.nuget.org/v3/index.json
 
+nuget Suave
 nuget FSharp.Core
