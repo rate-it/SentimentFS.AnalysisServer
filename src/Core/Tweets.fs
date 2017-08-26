@@ -1,0 +1,2 @@
+namespace SentimentFS.AnalysisServer.Core
+
