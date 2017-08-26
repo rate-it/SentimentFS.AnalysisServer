@@ -7,5 +7,6 @@ nuget MongoDB.Driver
 nuget FSharp.Core
 nuget SentimentFS.NaiveBayes
 nuget SentimentFS.Stemmer
+nuget Hopac
 nuget Microsoft.Extensions.Primitives < 2.0.0
 clitool Microsoft.DotNet.Watcher.Tools
