@@ -1,3 +1,5 @@
 namespace SentimentFS.AnalysisServer.Domain
 
-module
+module Read =
+
+    type Tweet = {  }
