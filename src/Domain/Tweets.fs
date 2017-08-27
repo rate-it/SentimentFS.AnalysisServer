@@ -2,11 +2,7 @@ namespace SentimentFS.AnalysisServer.Domain
 open System
 open MongoDB
 open MongoDB.Bson.Serialization.Attributes
-
-type Sentiment =
-    | Negative = -1
-    | Neutral = 0
-    | Positive = 1
+open Sentiment
 
 [<CLIMutable>]
 type Tweet = { [<BsonId>] IdStr: string
