@@ -23,11 +23,10 @@ module Sentiment =
       which while who who's whom why why's with won't would wouldn't you you'd
       you'll you're you've your yours yourself yourselves""" |> Tokenizer.wordsSequence |> Seq.toList
 
-    let private classificatorConfig: Config = { model = Naive; defaultWeight = 1; stem = stem; stopWords = stopWords }
+    let defaultClassificatorConfig: Config = { model = Naive; defaultWeight = 1; stem = stem; stopWords = stopWords }
 
-    let private trainer = Trainer.init<Sentiment>(Some classificatorConfig)
-
-    let spawn() =
+    let spawn(config: Config option) =
+        let trainer = Trainer.init<Sentiment>(config)
         MailboxProcessor.Start(fun agent ->
                 let rec loop (state: struct (State<Sentiment> option * Config)) =
                     async {
@@ -37,7 +36,7 @@ module Sentiment =
                             do state |> Classifier.classify(q) |> reply.Reply
                             return! state |> loop
                         | Train(query) ->
-                            return! state |> loop
+                            return! state |> Trainer.train(query) |> loop
                     }
                 loop (trainer)
 

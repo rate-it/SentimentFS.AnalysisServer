@@ -1,8 +1,9 @@
-﻿// Learn more about F# at http://fsharp.org
+﻿namespace SentimentFS.AnalysisServer.Core.Tests
 
-open System
+module Program =
+    open System
+    open Expecto
 
-[<EntryPoint>]
-let main argv =
-    printfn "Hello World from F#!"
-    0 // return an integer exit code
+    [<EntryPoint>]
+    let main argv =
+        Tests.runTestsInAssembly defaultConfig argv
