@@ -4,6 +4,7 @@ open MongoDB
 open MongoDB.Bson.Serialization.Attributes
 open Sentiment
 
+
 [<CLIMutable>]
 type Tweet = { [<BsonId>] IdStr: string
                [<BsonElement("text")>] Text: string
@@ -13,3 +14,8 @@ type Tweet = { [<BsonId>] IdStr: string
                [<BsonElement("longitude")>] Longitude: double
                [<BsonElement("latitude")>] Latitude: double
                [<BsonElement("sentiment")>] Sentiment: Sentiment }
+
+
+type TweetsManagerMessage =
+    | Store of Tweet list
+    | GetByKey of string * AsyncReplyChannel<Tweet list>

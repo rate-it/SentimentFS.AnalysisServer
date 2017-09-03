@@ -1,9 +1,9 @@
 namespace SentimentFS.AnalysisServer.Core
 
 module TweetsManager =
-    let spawn =
+    let spawn() =
         MailboxProcessor.Start(fun agent ->
-            let rec messageLoop() = async{
+            let rec messageLoop() = async {
 
                 // read a message
                 let! msg = agent.Receive()
@@ -13,7 +13,7 @@ module TweetsManager =
 
                 // loop to top
                 return! messageLoop()
-                }
+            }
 
     // start the loop
             messageLoop()
