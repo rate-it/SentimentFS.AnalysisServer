@@ -1,4 +1,4 @@
-namespace SentimentFS.AnalysisServer.Domain
+namespace SentimentFS.AnalysisServer.Domain.Analysis
 open System
 open System.Collections.Generic
 open SentimentFS.AnalysisServer.Domain.Sentiment
@@ -14,3 +14,6 @@ type AnalysisScore = { SentimentByQuantity: IDictionary<Sentiment, int>
                        Key: string
                        Trend: Trend
                        DateByQuantity: IDictionary<DateTime, int> }
+
+type Query =
+    | GetAnalysisForKey of key:string
