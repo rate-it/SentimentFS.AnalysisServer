@@ -1,9 +1,8 @@
-namespace SentimentFS.AnalysisServer.Domain
+namespace SentimentFS.AnalysisServer.Domain.Tweets
 open System
 open MongoDB
 open MongoDB.Bson.Serialization.Attributes
-open Sentiment
-
+open SentimentFS.AnalysisServer.Domain.Sentiment
 
 [<CLIMutable>]
 type Tweet = { [<BsonId>] IdStr: string
