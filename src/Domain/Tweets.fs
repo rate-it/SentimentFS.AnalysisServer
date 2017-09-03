@@ -15,6 +15,10 @@ type Tweet = { [<BsonId>] IdStr: string
                [<BsonElement("sentiment")>] Sentiment: Sentiment }
 
 
+type Tweets = { value: Tweet list }
+    with static member Empty = { value = [] }
+
+
 type TweetsManagerMessage =
-    | Store of Tweet list
-    | GetByKey of string * AsyncReplyChannel<Tweet list>
+    | Store of Tweets
+    | GetByKey of string * AsyncReplyChannel<Tweets>
