@@ -18,3 +18,15 @@ type Tweet = { [<BsonId>] IdStr: string
 type TweetsManagerMessage =
     | Store of Tweet list
     | GetByKey of string * AsyncReplyChannel<Tweet list>
+
+
+type Query =
+    | GetByKey of string
+
+type Command =
+    | Create of tweet: Tweet
+    | UpdateSentiment of newSentiment: Sentiment
+
+type Event =
+    | Created of tweet: Tweet
+    | SentimentUpdated of newSentiment: Sentiment
