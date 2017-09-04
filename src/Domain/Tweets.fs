@@ -21,4 +21,4 @@ type Tweets = { value: Tweet list }
 
 type TweetsManagerMessage =
     | Store of Tweets
-    | GetByKey of string * AsyncReplyChannel<Tweets>
+    | GetByKey of string * AsyncReplyChannel<Tweets option>
