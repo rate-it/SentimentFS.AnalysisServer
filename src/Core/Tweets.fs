@@ -22,6 +22,13 @@ module TweetsStorage =
                    | l -> Some { value = l }
         }
 
+    let private getSearchKeys (col: IMongoCollection<Tweet>) =
+        async {
+            let! result = col.Distinct<string>(FieldDefinition<_,_>.op_Implicit("Key"), FilterDefinition.op_Implicit("{}")).ToListAsync() |> Async.AwaitTask
+            return match result |> Seq.toList with
+                   | [] -> None
+                   | l -> Some l
+        }
 
     let spawn(db: IMongoDatabase) =
         MailboxProcessor.Start(fun agent ->
@@ -34,6 +41,10 @@ module TweetsStorage =
                 | GetByKey(key, reply) ->
                     let! res = db |> TweetsCollection |> getByKey key
                     reply.Reply(res)
+                    return! loop()
+                | GetSearchKeys(reply) ->
+                    let! res = db |> TweetsCollection |> getSearchKeys
+                    res |> reply.Reply |> ignore
                     return! loop()
 
             }

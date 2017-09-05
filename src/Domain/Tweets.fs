@@ -19,6 +19,7 @@ type Tweets = { value: Tweet list }
     with static member Empty = { value = [] }
 
 
-type TweetsManagerMessage =
+type TweetsStorageMessage =
     | Store of Tweets
     | GetByKey of string * AsyncReplyChannel<Tweets option>
+    | GetSearchKeys of AsyncReplyChannel<string list option>
