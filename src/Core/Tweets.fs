@@ -50,3 +50,15 @@ module TweetsStorage =
             }
             loop()
         )
+
+module TweetApiClient =
+    let spawn() =
+        MailboxProcessor.Start(fun agent ->
+            let rec loop () =
+                async {
+                    let! msg = agent.Receive()
+                    printfn "%A" msg
+                    return! loop()
+                }
+            loop()
+        )
