@@ -77,7 +77,7 @@ module TwitterApiClient =
                                         |> Seq.toList
                         match result with
                         | [] -> reply.Reply(None)
-                        | list -> reply.Reply(Some { value = list})
+                        | list -> reply.Reply(Some { value = list })
                     return! loop()
                 }
             loop()
