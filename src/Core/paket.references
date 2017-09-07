@@ -3,3 +3,4 @@ SentimentFS.NaiveBayes
 SentimentFS.Stemmer
 Hopac
 MongoDB.Driver
+TweetinviAPI
