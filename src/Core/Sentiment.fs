@@ -39,5 +39,4 @@ module Sentiment =
                             return! state |> Trainer.train(query) |> loop
                     }
                 loop (trainer)
-
             )
