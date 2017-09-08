@@ -11,4 +11,5 @@ nuget SentimentFS.Stemmer
 nuget TweetinviAPI
 nuget Hopac
 nuget Expecto
+nuget Akka
 clitool Microsoft.DotNet.Watcher.Tools
