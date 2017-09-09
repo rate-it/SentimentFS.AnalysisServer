@@ -14,7 +14,6 @@ nuget Akka
 nuget Microsoft.NET.Test.Sdk
 nuget xunit >= 2.3.0-beta5-build3769
 nuget xunit.runner.visualstudio >= 2.3.0-beta5-build3769
-nuget FsUnit.xUnit
 nuget Akka.TestKit.Xunit2
 nuget Expecto
 clitool Microsoft.DotNet.Watcher.Tools
