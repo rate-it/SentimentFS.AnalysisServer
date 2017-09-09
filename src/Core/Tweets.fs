@@ -73,7 +73,7 @@ module TwitterApiClient =
                         options.MaximumNumberOfResults <- 1000
                         let! queryResult = SearchAsync.SearchTweets(options) |> Async.AwaitTask
                         let result = queryResult
-                                        |> Seq.map(fun tweet -> { IdStr = tweet.TweetDTO.IdStr; Text = tweet.TweetDTO.Text; Lang = tweet.TweetDTO.Language.ToString();  Key = key; Date = x.TweetDTO.CreatedAt; Longitude = 0.0; Latitude = 0.0; Sentiment = Sentiment.Neutral })
+                                        |> Seq.map(fun tweet -> { IdStr = tweet.TweetDTO.IdStr; Text = tweet.TweetDTO.Text; Lang = tweet.TweetDTO.Language.ToString();  Key = key; Date = tweet.TweetDTO.CreatedAt; Longitude = 0.0; Latitude = 0.0; Sentiment = Sentiment.Neutral })
                                         |> Seq.toList
                         match result with
                         | [] -> reply.Reply(None)
