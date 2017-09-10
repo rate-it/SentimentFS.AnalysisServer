@@ -1,4 +1,7 @@
 namespace SentimentFS.AnalysisServer.Core.Analysis
+open Akka.Actor
+open SentimentFS.AnalysisServer.Domain.Analysis
 
-module AnalysisManager =
-    let spawn() = 2
+type AnalysisActor() as this =
+    inherit ReceiveActor()
+    do this.Receive<GetAnalysisForKey>(fun msg -> printf "")

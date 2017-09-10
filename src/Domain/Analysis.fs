@@ -21,5 +21,4 @@ type AnalysisScore = { SentimentByQuantity: IDictionary<Sentiment, int>
                                     Trend = Trend.Stable
                                     DateByQuantity = Dictionary<DateTime, int>() }
 
-type Query =
-    | GetAnalysisForKey of key:string
+type GetAnalysisForKey = { key : string }
