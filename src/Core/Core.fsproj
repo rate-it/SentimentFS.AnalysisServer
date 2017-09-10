@@ -5,6 +5,7 @@
   <ItemGroup>
     <Compile Include="Sentiment.fs" />
     <Compile Include="Tweets.fs" />
+    <Compile Include="Analysis.fs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Domain\Domain.fsproj" />
