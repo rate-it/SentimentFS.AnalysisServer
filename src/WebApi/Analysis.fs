@@ -19,7 +19,7 @@ module Analysis =
         let getAnalysisResultByKey(key):WebPart =
             fun (x : HttpContext) ->
                 async {
-                    let result = ""
+                    do analysisActor.Tell({ key = key })
                     return! OK key x
                 }
 
