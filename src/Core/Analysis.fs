@@ -4,4 +4,8 @@ open SentimentFS.AnalysisServer.Domain.Analysis
 
 type AnalysisActor() as this =
     inherit ReceiveActor()
-    do this.Receive<GetAnalysisForKey>(fun msg -> printf "Elo: %s" (msg.key))
+    do this.Receive<GetAnalysisForKey>(this.Handle)
+
+    member this.Handle(msg: GetAnalysisForKey) =
+        this.Sender.Tell(sprintf "Pozdro: %s" msg.key)
+        true

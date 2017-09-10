@@ -19,8 +19,8 @@ module Analysis =
         let getAnalysisResultByKey(key):WebPart =
             fun (x : HttpContext) ->
                 async {
-                    do analysisActor.Tell({ key = key })
-                    return! OK key x
+                    let! result = analysisActor.Ask<string>({ key = key }) |> Async.AwaitTask
+                    return! OK result x
                 }
 
         pathStarts "/api/analysis" >=> choose [
