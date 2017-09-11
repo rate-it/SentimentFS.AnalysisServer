@@ -13,3 +13,8 @@ module Sentiment =
     type Message =
         | Classify of string * AsyncReplyChannel<ClassificationScore<Sentiment>>
         | Train of TrainingQuery<Sentiment>
+
+
+    type ClassifyMessage = { key : string }
+    type TrainMessage = { trainQuery : TrainingQuery<Sentiment> }
+

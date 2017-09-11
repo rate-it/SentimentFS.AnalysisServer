@@ -8,6 +8,7 @@ module Sentiment =
     open SentimentFS.AnalysisServer.Domain.Sentiment
     open SentimentFS.Stemmer.Stemmer
     open SentimentFS.TextUtilities
+    open Akka.Actor
 
     let private stopWords = """a about above after again against all am an and any are aren't as at be
       because been before being below between both but by can't cannot could
@@ -40,3 +41,16 @@ module Sentiment =
                     }
                 loop (trainer)
             )
+
+    type SentimentActor(config: Config option) as this =
+        inherit ReceiveActor()
+        do
+            this.Receive<TrainMessage>(this.HandleTrainMessage)
+            this.ReceiveAsync<ClassifyMessage>(fun cm -> this.HandleClassifyMessage(cm))
+        let agent = spawn(config)
+
+        member this.HandleTrainMessage(msg: TrainMessage) : bool =
+            agent.Post(Train(msg.trainQuery))
+            true
+        member this.HandleClassifyMessage(msg: ClassifyMessage) =
+            agent.PostAndAsyncReply(fun ch -> Classify(msg.key, ch)) |> Async.StartAsTask :> System.Threading.Tasks.Task
