@@ -15,6 +15,6 @@ module Sentiment =
         | Train of TrainingQuery<Sentiment>
 
 
-    type ClassifyMessage = { key : string }
+    type ClassifyMessage = { text : string }
     type TrainMessage = { trainQuery : TrainingQuery<Sentiment> }
 

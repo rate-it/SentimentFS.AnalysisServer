@@ -53,4 +53,9 @@ module Sentiment =
             agent.Post(Train(msg.trainQuery))
             true
         member this.HandleClassifyMessage(msg: ClassifyMessage) =
-            agent.PostAndAsyncReply(fun ch -> Classify(msg.key, ch)) |> Async.StartAsTask :> System.Threading.Tasks.Task
+            let sender = this.Sender
+            async {
+                let! result = agent.PostAndAsyncReply(fun ch -> Classify(msg.text, ch))
+                sender.Tell(result)
+                return 0
+            } |> Async.StartAsTask :> System.Threading.Tasks.Task
