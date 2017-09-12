@@ -2,7 +2,11 @@ module Tests
 
 open System
 open Xunit
+open Akka.TestKit.Xunit2
 
-[<Fact>]
-let ``My test`` () =
-    Assert.True(true)
+type AnalysisActorTests() =
+    inherit TestKit()
+
+    [<Fact>]
+    let ``My test`` () =
+        Assert.True(true)
