@@ -55,11 +55,12 @@ module TwitterApiClient =
     open SentimentFS.AnalysisServer.Domain.Tweets
     open SentimentFS.AnalysisServer.Domain.Sentiment
     open System
+    open Akka.Actor
     open Tweetinvi
     open Tweetinvi.Models
     open Tweetinvi.Parameters
 
-    let spawn(credentials: ITwitterCredentials) =
+    let private spawn(credentials: ITwitterCredentials) =
         MailboxProcessor.Start(fun agent ->
             let rec loop () =
                 async {
@@ -82,3 +83,17 @@ module TwitterApiClient =
                 }
             loop()
         )
+
+    type TwitterApiActor(credentials: ITwitterCredentials) as this =
+        inherit ReceiveActor()
+        do
+            this.ReceiveAsync<GetTweetsByKey>(fun msg -> this.Handle(msg))
+        let agent = spawn(credentials)
+        member this.Handle(msg: GetTweetsByKey) =
+            let sender = this.Sender
+            async {
+                let! result = agent.PostAndAsyncReply(fun ch -> GetTweets(msg.key, ch))
+                sender.Tell(result)
+                return 0
+            } |> Async.StartAsTask :> System.Threading.Tasks.Task
+

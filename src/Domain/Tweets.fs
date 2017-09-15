@@ -27,3 +27,5 @@ type TweetsStorageMessage =
 
 type TwitterApiClientMessage =
     | GetTweets of key: string * AsyncReplyChannel<Tweets option>
+
+type GetTweetsByKey = { key : string }
