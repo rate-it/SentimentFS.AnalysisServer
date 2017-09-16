@@ -6,6 +6,7 @@ module TweetsStorage =
     open MongoDB.Bson
     open MongoDB.Driver
     open MongoDB.Driver.Linq
+    open Akka.Actor
 
     let private TweetsCollection (db:IMongoDatabase) = db.GetCollection<Tweet>("tweets")
 
@@ -30,26 +31,26 @@ module TweetsStorage =
                    | l -> Some l
         }
 
-    let spawn(db: IMongoDatabase) =
-        MailboxProcessor.Start(fun agent ->
-            let rec loop() = async {
-                let! msg = agent.Receive()
+    type TweetsStorageActor(db: IMongoDatabase) as this =
+        inherit ReceiveActor()
+        do
+            this.ReceiveAsync<TweetsStorageMessage>(fun msg -> this.Handle(msg))
+        member this.Handle(msg: TweetsStorageMessage) =
+            let sender = this.Sender
+            async {
                 match msg with
                 | Store tweets ->
                     do! db |> TweetsCollection |> store(tweets)
-                    return! loop()
-                | GetByKey(key, reply) ->
+                | GetByKey key ->
                     let! res = db |> TweetsCollection |> getByKey key
-                    reply.Reply(res)
-                    return! loop()
-                | GetSearchKeys(reply) ->
+                    sender.Tell(res)
+                | GetSearchKeys ->
                     let! res = db |> TweetsCollection |> getSearchKeys
-                    res |> reply.Reply |> ignore
-                    return! loop()
+                    sender.Tell(res)
+                return 0
+            } |> Async.StartAsTask :> System.Threading.Tasks.Task
 
-            }
-            loop()
-        )
+
 
 module TwitterApiClient =
     open SentimentFS.AnalysisServer.Domain.Tweets

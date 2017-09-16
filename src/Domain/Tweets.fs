@@ -21,8 +21,8 @@ type Tweets = { value: Tweet list }
 
 type TweetsStorageMessage =
     | Store of Tweets
-    | GetByKey of string * AsyncReplyChannel<Tweets option>
-    | GetSearchKeys of AsyncReplyChannel<string list option>
+    | GetByKey of string
+    | GetSearchKeys
 
 
 type TwitterApiClientMessage =
