@@ -2,17 +2,36 @@ namespace SentimentFS.AnalysisServer.Core
 
 module TweetsStorage =
     open SentimentFS.AnalysisServer.Domain.Tweets
-    open MongoDB.Driver
-    open MongoDB.Bson
-    open MongoDB.Driver
-    open MongoDB.Driver.Linq
+    open Cassandra
+    open Cassandra.Data
     open Akka.Actor
 
-    let private TweetsCollection (db:IMongoDatabase) = db.GetCollection<Tweet>("tweets")
+    let private CreateTweetsCollectionIfNotExists (session: ISession) =
+        session.Execute("""
+                          CREATE TABLE IF NOT EXISTS tweets (
+                            Id uuid,
+                            IdStr varchar,
+                            Text text,
+                            Key varchar,
+                            Date timestamp,
+                            Lang varchar,
+                            Longitude double,
+                            Latitude double,
+                            Sentiment int,
+                            PRIMARY KEY(Id)
+                          );
+                        """)
 
-    let private store (tweets: Tweets) (col: IMongoCollection<Tweet>) =
+    let private store (tweets: Tweets) (session: ISession) =
         async {
-            return! col.InsertManyAsync(tweets.value) |> Async.AwaitTask
+            let batch = BatchStatement()
+            let query = session.Prepare("""
+                            INSERT INTO tweets (Id, IdStr, Text, Key, Date, Lang, Longitude, Latitude, Sentiment) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        """)
+            for tweet in tweets.value do
+                query.Bind(tweet.Id, tweet.IdStr, tweet.Text, tweet.Key, tweet.Date, tweet.Lang, tweet.Longitude, tweet.Latitude, tweet.Sentiment) |> batch.Add |> ignore
+
+            return! session.ExecuteAsync(batch) |> Async.AwaitTask
         }
 
     let private getByKey (key:string) (col: IMongoCollection<Tweet>) =

@@ -3,7 +3,8 @@ open System
 open SentimentFS.AnalysisServer.Domain.Sentiment
 
 [<CLIMutable>]
-type Tweet = { IdStr: string
+type Tweet = { Id: Guid
+               IdStr: string
                Text: string
                Key: string
                Date: DateTime
