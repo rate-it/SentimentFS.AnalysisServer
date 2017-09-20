@@ -3,5 +3,5 @@ FSharp.Core
 SentimentFS.NaiveBayes
 SentimentFS.Stemmer
 Hopac
-MongoDB.Driver
+CassandraCSharpDriver
 TweetinviAPI

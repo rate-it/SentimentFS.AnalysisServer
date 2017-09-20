@@ -4,7 +4,7 @@ source https://api.nuget.org/v3/index.json
 source https://www.myget.org/F/sentimentfs/api/v2
 
 nuget Suave
-nuget MongoDB.Driver
+nuget CassandraCSharpDriver
 nuget FSharp.Core
 nuget SentimentFS.NaiveBayes
 nuget SentimentFS.Stemmer
