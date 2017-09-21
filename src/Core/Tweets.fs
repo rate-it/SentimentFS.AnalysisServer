@@ -1,24 +1,27 @@
 namespace SentimentFS.AnalysisServer.Core
 
 module TweetsStorage =
+    open System
     open SentimentFS.AnalysisServer.Domain.Tweets
+    open SentimentFS.AnalysisServer.Domain.Sentiment
     open Cassandra
     open Cassandra.Data
+    open Cassandra.Mapping
     open Akka.Actor
 
     let private CreateTweetsCollectionIfNotExists (session: ISession) =
         session.Execute("""
                           CREATE TABLE IF NOT EXISTS tweets (
-                            Id uuid,
-                            IdStr varchar,
-                            Text text,
-                            Key varchar,
-                            Date timestamp,
-                            Lang varchar,
-                            Longitude double,
-                            Latitude double,
-                            Sentiment int,
-                            PRIMARY KEY(Id)
+                            id uuid,
+                            id_str varchar,
+                            text text,
+                            key varchar,
+                            date timestamp,
+                            lang varchar,
+                            longitude double,
+                            latitude double,
+                            sentiment int,
+                            PRIMARY KEY(id)
                           );
                         """)
 
@@ -26,7 +29,7 @@ module TweetsStorage =
         async {
             let batch = BatchStatement()
             let query = session.Prepare("""
-                            INSERT INTO tweets (Id, IdStr, Text, Key, Date, Lang, Longitude, Latitude, Sentiment) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                            INSERT INTO tweets (id, id_str, text, key, date, lang, longitude, latitude, sentiment) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                         """)
             for tweet in tweets.value do
                 query.Bind(tweet.Id, tweet.IdStr, tweet.Text, tweet.Key, tweet.Date, tweet.Lang, tweet.Longitude, tweet.Latitude, tweet.Sentiment) |> batch.Add |> ignore
@@ -34,12 +37,13 @@ module TweetsStorage =
             return! session.ExecuteAsync(batch) |> Async.AwaitTask
         }
 
-    let private getByKey (key:string) (col: IMongoCollection<Tweet>) =
+    let private getByKey (key:string) (session: ISession) =
         async {
-            let! result = col.Find(fun tweet -> tweet.Key = key).ToListAsync() |> Async.AwaitTask
-            return match result |> Seq.toList with
+            let! query = session.PrepareAsync("SELECT id, id_str, text, key, date, lang, longitude, latitude, sentiment FROM tweets WHERE key=?") |> Async.AwaitTask
+            let! result = session.ExecuteAsync(query.Bind(key)) |> Async.AwaitTask
+            return match (result.GetRows()) |> Seq.toList with
                    | [] -> None
-                   | l -> Some { value = l }
+                   | l -> Some { value = (l |> List.map(fun x -> x |> Tweet.FromCassandraRow )) }
         }
 
     let private getSearchKeys (col: IMongoCollection<Tweet>) =

@@ -1,6 +1,7 @@
 namespace SentimentFS.AnalysisServer.Domain.Tweets
 open System
 open SentimentFS.AnalysisServer.Domain.Sentiment
+open Cassandra
 
 [<CLIMutable>]
 type Tweet = { Id: Guid
@@ -12,6 +13,15 @@ type Tweet = { Id: Guid
                Longitude: double
                Latitude: double
                Sentiment: Sentiment }
+    with static member FromCassandraRow(x: Row) = { Id = x.GetValue<Guid>("id")
+                                                    IdStr = x.GetValue<string>("id_str")
+                                                    Text = x.GetValue<string>("text")
+                                                    Key = x.GetValue<string>("key")
+                                                    Date = x.GetValue<DateTime>("date")
+                                                    Lang = x.GetValue<string>("lang")
+                                                    Longitude = x.GetValue<double>("longitude")
+                                                    Latitude = x.GetValue<double>("latitude")
+                                                    Sentiment = x.GetValue<Sentiment>("sentiment") }
 
 
 type Tweets = { value: Tweet list }
