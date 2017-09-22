@@ -21,7 +21,7 @@ module TweetsStorage =
                             longitude double,
                             latitude double,
                             sentiment int,
-                            PRIMARY KEY(id)
+                            PRIMARY KEY(key, id)
                           );
                         """)
 
@@ -46,12 +46,13 @@ module TweetsStorage =
                    | l -> Some { value = (l |> List.map(fun x -> x |> Tweet.FromCassandraRow )) }
         }
 
-    let private getSearchKeys (col: IMongoCollection<Tweet>) =
+    let private getSearchKeys (session: ISession) =
         async {
-            let! result = col.Distinct<string>(FieldDefinition<_,_>.op_Implicit("Key"), FilterDefinition.op_Implicit("{}")).ToListAsync() |> Async.AwaitTask
-            return match result |> Seq.toList with
+            let q = SimpleStatement("SELECT DISTINCT key FROM tweets;")
+            let! result = session.ExecuteAsync(q.SetPageSize(100)) |> Async.AwaitTask
+            return match (result.GetRows()) |> Seq.toList with
                    | [] -> None
-                   | l -> Some l
+                   | l -> Some (l |> List.map(fun x -> x.GetValue<string>("key")))
         }
 
     type TweetsStorageActor(db: IMongoDatabase) as this =
@@ -98,7 +99,14 @@ module TwitterApiClient =
                         options.MaximumNumberOfResults <- 1000
                         let! queryResult = SearchAsync.SearchTweets(options) |> Async.AwaitTask
                         let result = queryResult
-                                        |> Seq.map(fun tweet -> { IdStr = tweet.TweetDTO.IdStr; Text = tweet.TweetDTO.Text; Lang = tweet.TweetDTO.Language.ToString();  Key = key; Date = tweet.TweetDTO.CreatedAt; Longitude = 0.0; Latitude = 0.0; Sentiment = Sentiment.Neutral })
+                                        |> Seq.map(fun tweet -> { Id = Guid.NewGuid();
+                                                                  IdStr = tweet.TweetDTO.IdStr;
+                                                                  Text = tweet.TweetDTO.Text;
+                                                                  Lang = tweet.TweetDTO.Language.ToString();
+                                                                  Key = key; Date = tweet.TweetDTO.CreatedAt;
+                                                                  Longitude = 0.0;
+                                                                  Latitude = 0.0;
+                                                                  Sentiment = Sentiment.Neutral })
                                         |> Seq.toList
                         match result with
                         | [] -> reply.Reply(None)
