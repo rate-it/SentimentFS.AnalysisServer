@@ -9,7 +9,7 @@ module TweetsStorage =
     open Cassandra.Mapping
     open Akka.Actor
 
-    let private CreateTweetsCollectionIfNotExists (session: ISession) =
+    let private createTweetsCollectionIfNotExists (session: ISession) =
         session.Execute("""
                           CREATE TABLE IF NOT EXISTS tweets (
                             id uuid,
@@ -34,7 +34,7 @@ module TweetsStorage =
             for tweet in tweets.value do
                 query.Bind(tweet.Id, tweet.IdStr, tweet.Text, tweet.Key, tweet.Date, tweet.Lang, tweet.Longitude, tweet.Latitude, tweet.Sentiment) |> batch.Add |> ignore
 
-            return! session.ExecuteAsync(batch) |> Async.AwaitTask
+            session.ExecuteAsync(batch) |> Async.AwaitTask |> ignore
         }
 
     let private getByKey (key:string) (session: ISession) =
@@ -55,7 +55,7 @@ module TweetsStorage =
                    | l -> Some (l |> List.map(fun x -> x.GetValue<string>("key")))
         }
 
-    type TweetsStorageActor(db: IMongoDatabase) as this =
+    type TweetsStorageActor(session: ISession) as this =
         inherit ReceiveActor()
         do
             this.ReceiveAsync<TweetsStorageMessage>(fun msg -> this.Handle(msg))
@@ -64,12 +64,12 @@ module TweetsStorage =
             async {
                 match msg with
                 | Store tweets ->
-                    do! db |> TweetsCollection |> store(tweets)
+                    session |> store(tweets) |> Async.Start
                 | GetByKey key ->
-                    let! res = db |> TweetsCollection |> getByKey key
+                    let! res = session |> getByKey key
                     sender.Tell(res)
                 | GetSearchKeys ->
-                    let! res = db |> TweetsCollection |> getSearchKeys
+                    let! res = session |> getSearchKeys
                     sender.Tell(res)
                 return 0
             } |> Async.StartAsTask :> System.Threading.Tasks.Task
