@@ -129,3 +129,14 @@ module TwitterApiClient =
                 return 0
             } |> Async.StartAsTask :> System.Threading.Tasks.Task
 
+
+module TweetsManager =
+    open Cassandra
+    open Akka.Actor
+    open Tweetinvi.Models
+
+    type TweetsmanagerActor(session: ISession, credentials : ITwitterCredentials) =
+        inherit ReceiveActor()
+
+
+
