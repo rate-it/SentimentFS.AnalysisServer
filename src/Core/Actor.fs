@@ -1,13 +1,16 @@
 namespace SentimentFS.AnalysisServer.Core.Actor
 
 type ActorType = { Name: string; Parent: ActorType option; Path: string }
-    with static member Create(name, parent) =
+
+module ActorType =
+    let create(name, parent) =
         let parentPath = match parent with
                          | Some p -> p.Path
                          | None -> "/user"
         { Name = name; Parent = parent; Path = (sprintf "%s/%s" parentPath name) }
 
 module Actors =
-    let tweetsMaster = ActorType.Create("tweets", None)
-    let twitterApiActor = ActorType.Create("twitter-api", Some tweetsMaster)
-    let tweetsDbActor = ActorType.Create("database", Some tweetsMaster)
+    open ActorType
+    let tweetsMaster = create("tweets", None)
+    let twitterApiActor = create("twitter-api", Some tweetsMaster)
+    let tweetsDbActor = create("database", Some tweetsMaster)

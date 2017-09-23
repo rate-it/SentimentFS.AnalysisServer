@@ -5,6 +5,7 @@
     <TargetFramework>netcoreapp2.0</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Actor.Tests.fs" />
     <Compile Include="Sentiment.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
