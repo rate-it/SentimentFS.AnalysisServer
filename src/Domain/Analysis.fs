@@ -8,13 +8,13 @@ type Trend =
     | Stable = 0
     | Decreasing = -1
 
-type AnalysisScore = { SentimentByQuantity: IDictionary<Sentiment, int>
+type AnalysisScore = { SentimentByQuantity: IDictionary<Emotion, int>
                        KeyWords: struct (string * int) seq
                        Localizations: struct (float32 * float32) seq
                        Key: string
                        Trend: Trend
                        DateByQuantity: IDictionary<DateTime, int> }
-    with static member Zero key = { SentimentByQuantity = Dictionary<Sentiment, int>()
+    with static member Zero key = { SentimentByQuantity = Dictionary<Emotion, int>()
                                     KeyWords = [||]
                                     Localizations = [||]
                                     Key = key

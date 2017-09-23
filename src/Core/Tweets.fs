@@ -106,7 +106,7 @@ module TwitterApiClient =
                                                                   Key = key; Date = tweet.TweetDTO.CreatedAt;
                                                                   Longitude = 0.0;
                                                                   Latitude = 0.0;
-                                                                  Sentiment = Sentiment.Neutral })
+                                                                  Sentiment = Emotion.Neutral })
                                         |> Seq.toList
                         match result with
                         | [] -> reply.Reply(None)
@@ -137,6 +137,5 @@ module TweetsManager =
 
     type TweetsmanagerActor(session: ISession, credentials : ITwitterCredentials) =
         inherit ReceiveActor()
-
 
 

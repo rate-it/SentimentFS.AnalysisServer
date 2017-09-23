@@ -3,6 +3,7 @@
     <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
+    <Comoile Include="Consts.fs" />
     <Compile Include="Sentiment.fs" />
     <Compile Include="Tweets.fs" />
     <Compile Include="Analysis.fs" />

@@ -27,9 +27,9 @@ module Sentiment =
     let defaultClassificatorConfig: Config = { model = Naive; defaultWeight = 1; stem = stem; stopWords = stopWords }
 
     let spawn(config: Config option) =
-        let trainer = Trainer.init<Sentiment>(config)
+        let trainer = Trainer.init<Emotion>(config)
         MailboxProcessor.Start(fun agent ->
-                let rec loop (state: struct (State<Sentiment> option * Config)) =
+                let rec loop (state: struct (State<Emotion> option * Config)) =
                     async {
                         let! msg = agent.Receive()
                         match msg with

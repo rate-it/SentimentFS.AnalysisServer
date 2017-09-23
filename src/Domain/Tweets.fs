@@ -12,7 +12,7 @@ type Tweet = { Id: Guid
                Lang: string
                Longitude: double
                Latitude: double
-               Sentiment: Sentiment }
+               Sentiment: Emotion }
     with static member FromCassandraRow(x: Row) = { Id = x.GetValue<Guid>("id")
                                                     IdStr = x.GetValue<string>("id_str")
                                                     Text = x.GetValue<string>("text")
@@ -21,7 +21,7 @@ type Tweet = { Id: Guid
                                                     Lang = x.GetValue<string>("lang")
                                                     Longitude = x.GetValue<double>("longitude")
                                                     Latitude = x.GetValue<double>("latitude")
-                                                    Sentiment = x.GetValue<Sentiment>("sentiment") }
+                                                    Sentiment = Enum. x.GetValue<int>("sentiment") }
 
 
 type Tweets = { value: Tweet list }

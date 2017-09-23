@@ -15,17 +15,17 @@ module Sentiment =
                     let positiveText = "I love fsharp"
                     let negativeText = "I hate java"
                     let classifier = Sentiment.spawn(Some Sentiment.defaultClassificatorConfig)
-                    classifier.Post(Train({ value = positiveText; category = Sentiment.Positive; weight = None }))
-                    classifier.Post(Train({ value = negativeText; category = Sentiment.Negative; weight = None }))
+                    classifier.Post(Train({ value = positiveText; category = Emotion.Positive; weight = None }))
+                    classifier.Post(Train({ value = negativeText; category = Emotion.Negative; weight = None }))
                     let subject = classifier.PostAndReply(fun ch -> Classify("My brother hate java", ch))
-                    Expect.isGreaterThan (subject.score.TryFind(Sentiment.Negative).Value) (subject.score.TryFind(Sentiment.Positive).Value) "negative score should be greater than positive"
+                    Expect.isGreaterThan (subject.score.TryFind(Emotion.Negative).Value) (subject.score.TryFind(Emotion.Positive).Value) "negative score should be greater than positive"
                 testCase "test when text is positive" <| fun _ ->
                     let positiveText = "I love fsharp"
                     let negativeText = "I hate java"
                     let classifier = Sentiment.spawn(Some Sentiment.defaultClassificatorConfig)
-                    classifier.Post(Train({ value = positiveText; category = Sentiment.Positive; weight = None }))
-                    classifier.Post(Train({ value = negativeText; category = Sentiment.Negative; weight = None }))
+                    classifier.Post(Train({ value = positiveText; category = Emotion.Positive; weight = None }))
+                    classifier.Post(Train({ value = negativeText; category = Emotion.Negative; weight = None }))
                     let subject = classifier.PostAndReply(fun ch -> Classify("My brother love fsharp", ch))
-                    Expect.isGreaterThan (subject.score.TryFind(Sentiment.Positive).Value) (subject.score.TryFind(Sentiment.Negative).Value) "positive score should be greater than negative"
+                    Expect.isGreaterThan (subject.score.TryFind(Emotion.Positive).Value) (subject.score.TryFind(Emotion.Negative).Value) "positive score should be greater than negative"
             ]
         ]
