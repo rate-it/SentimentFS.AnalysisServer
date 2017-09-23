@@ -21,7 +21,7 @@ type Tweet = { Id: Guid
                                                     Lang = x.GetValue<string>("lang")
                                                     Longitude = x.GetValue<double>("longitude")
                                                     Latitude = x.GetValue<double>("latitude")
-                                                    Sentiment = Enum. x.GetValue<int>("sentiment") }
+                                                    Sentiment = (LanguagePrimitives.EnumOfValue(x.GetValue<int>("sentiment"))) }
 
 
 type Tweets = { value: Tweet list }
