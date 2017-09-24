@@ -194,7 +194,7 @@ module TweetsMaster =
             this.Receive<GetTweetsByKey>(this.HandleGetTweetsByKey)
 
         override this.PreStart() =
-            setntimentActor <- Akka.Actor.Internal.InternalCurrentActorCellKeeper.Current.ActorOf(Props.Create<SentimentActor>(Sentiment.defaultClassificatorConfig), Actors.sentimentActor.Name)
+            setntimentActor <- Akka.Actor.Internal.InternalCurrentActorCellKeeper.Current.ActorOf(Props.Create<SentimentActor>(defaultClassificatorConfig), Actors.sentimentActor.Name)
             tweetDbActor <- Akka.Actor.Internal.InternalCurrentActorCellKeeper.Current.ActorOf(Props.Create<TweetsStorageActor>(session), Actors.tweetStorageActor.Name)
             twitterApiActor <- Akka.Actor.Internal.InternalCurrentActorCellKeeper.Current.ActorOf(Props.Create<TwitterApiActor>(credentials), Actors.twitterApiActor.Name)
             base.PreStart()

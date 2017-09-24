@@ -7,7 +7,6 @@ module Analysis =
     open Suave.Operators
     open Suave.Successful
     open SentimentFS.AnalysisServer.Core.Analysis
-    open SentimentFS.AnalysisServer.Domain.Analysis
 
     let analysisController() =
         let actorSystem =

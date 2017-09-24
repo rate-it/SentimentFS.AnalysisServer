@@ -5,7 +5,6 @@ open Xunit
 open Akka.TestKit.Xunit2
 open Akka.Actor
 open SentimentFS.AnalysisServer.Core.Sentiment
-open SentimentFS.AnalysisServer.Domain.Sentiment
 open SentimentFS.NaiveBayes.Dto
 type AnalysisActorTests() as this =
     inherit TestKit()
