@@ -1,9 +1,52 @@
-namespace SentimentFS.AnalysisServer.Core
+namespace SentimentFS.AnalysisServer.Core.Tweets
+
+module Messages =
+    open System
+    open SentimentFS.AnalysisServer.Core.Sentiment
+    open Cassandra
+
+    [<CLIMutable>]
+    type Tweet = { Id: Guid
+                   IdStr: string
+                   Text: string
+                   Key: string
+                   Date: DateTime
+                   Lang: string
+                   Longitude: double
+                   Latitude: double
+                   Sentiment: Emotion }
+        with static member FromCassandraRow(x: Row) = { Id = x.GetValue<Guid>("id")
+                                                        IdStr = x.GetValue<string>("id_str")
+                                                        Text = x.GetValue<string>("text")
+                                                        Key = x.GetValue<string>("key")
+                                                        Date = x.GetValue<DateTime>("date")
+                                                        Lang = x.GetValue<string>("lang")
+                                                        Longitude = x.GetValue<double>("longitude")
+                                                        Latitude = x.GetValue<double>("latitude")
+                                                        Sentiment = (LanguagePrimitives.EnumOfValue(x.GetValue<int>("sentiment"))) }
+
+
+    type Tweets = { value: Tweet list }
+        with static member Empty = { value = [] }
+
+
+    type TweetsStorageMessage =
+        | Store of Tweets
+        | GetByKey of string
+        | GetSearchKeys
+
+
+    type TwitterApiClientMessage =
+        | GetTweets of key: string * AsyncReplyChannel<Tweets option>
+
+    type GetTweetsByKey = { key : string }
+
 
 module TweetsStorage =
     open System
-    open SentimentFS.AnalysisServer.Domain.Tweets
-    open SentimentFS.AnalysisServer.Domain.Sentiment
+    open SentimentFS.AnalysisServer.Core
+    open SentimentFS.AnalysisServer.Core.Sentiment
+    open Messages
     open Cassandra
     open Cassandra.Data
     open Cassandra.Mapping
@@ -77,8 +120,8 @@ module TweetsStorage =
 
 
 module TwitterApiClient =
-    open SentimentFS.AnalysisServer.Domain.Tweets
-    open SentimentFS.AnalysisServer.Domain.Sentiment
+    open Messages
+    open SentimentFS.AnalysisServer.Core.Sentiment
     open System
     open Akka.Actor
     open Tweetinvi
@@ -134,7 +177,7 @@ module TweetsMaster =
     open Cassandra
     open Akka.Actor
     open Tweetinvi.Models
-    open SentimentFS.AnalysisServer.Domain.Tweets
+    open Messages
     open SentimentFS.AnalysisServer.Core.Actor
     open SentimentFS.AnalysisServer.Core.Sentiment
     open TweetsStorage
@@ -157,6 +200,7 @@ module TweetsMaster =
             base.PreStart()
 
         member this.HandleGetTweetsByKey(msg: GetTweetsByKey) =
-            tweetDbActor.Tell(GetByKey(msg.key))
+            tweetDbActor.Tell(GetByKey(msg.key), this.Sender)
+            true
 
 
