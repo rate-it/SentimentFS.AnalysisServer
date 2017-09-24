@@ -15,10 +15,10 @@ module Actor =
                     Expect.equal subject.Path "/user/tweets" "path should equal tweets"
                 }
                 test "TweetsDbActor" {
-                    let subject = Actors.tweetsDbActor
-                    Expect.equal subject.Name "database" "name should equal database"
+                    let subject = Actors.tweetStorageActor
+                    Expect.equal subject.Name "storage" "name should equal storage"
                     Expect.isSome subject.Parent "Parent should be Some"
-                    Expect.equal subject.Path "/user/tweets/database" "path should equal tweets"
+                    Expect.equal subject.Path "/user/tweets/storage" "path should equal tweets"
                 }
                 test "TwitterApiActor" {
                     let subject = Actors.twitterApiActor

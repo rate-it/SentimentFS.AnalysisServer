@@ -135,14 +135,20 @@ module TweetsMaster =
     open Akka.Actor
     open Tweetinvi.Models
     open SentimentFS.AnalysisServer.Domain.Tweets
+    open SentimentFS.AnalysisServer.Core.Actor.Actors
+    open SentimentFS.AnalysisServer.Core.Sentiment
+    open TweetsStorage
 
     type TweetsMasterActor(session: ISession, credentials : ITwitterCredentials) as this =
         inherit ReceiveActor()
 
-        member private this.SetntimentActor: IActorRef = null
+        let mutable setntimentActor: IActorRef = null
+        let mutable tweetDbActor: IActorRef = null
+        let mutable twitterApiActor: IActorRef = null
 
         override this.PreStart() =
-            this.SetntimentActor = null
+            setntimentActor <- Akka.Actor.Internal.InternalCurrentActorCellKeeper.Current.ActorOf(Props.Create<SentimentActor>(Sentiment.defaultClassificatorConfig), sentimentActor.Name)
+            tweetDbActor <- Akka.Actor.Internal.InternalCurrentActorCellKeeper.Current.ActorOf(Props.Create<TweetsStorageActor>(session), tweetStorageActor.Name)
             base.PreStart()
 
         member this.Handle(msg: GetTweetsByKey) =

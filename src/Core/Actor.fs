@@ -13,5 +13,5 @@ module Actors =
     open ActorType
     let tweetsMaster = create("tweets", None)
     let twitterApiActor = create("twitter-api", Some tweetsMaster)
-    let tweetsDbActor = create("database", Some tweetsMaster)
+    let tweetStorageActor = create("storage", Some tweetsMaster)
     let sentimentActor = create("sentiment", Some tweetsMaster)
