@@ -134,8 +134,18 @@ module TweetsMaster =
     open Cassandra
     open Akka.Actor
     open Tweetinvi.Models
+    open SentimentFS.AnalysisServer.Domain.Tweets
 
-    type TweetsMasterActor(session: ISession, credentials : ITwitterCredentials) =
+    type TweetsMasterActor(session: ISession, credentials : ITwitterCredentials) as this =
         inherit ReceiveActor()
+
+        member private this.SetntimentActor: IActorRef = null
+
+        override this.PreStart() =
+            this.SetntimentActor = null
+            base.PreStart()
+
+        member this.Handle(msg: GetTweetsByKey) =
+            2
 
 

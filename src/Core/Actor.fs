@@ -14,3 +14,4 @@ module Actors =
     let tweetsMaster = create("tweets", None)
     let twitterApiActor = create("twitter-api", Some tweetsMaster)
     let tweetsDbActor = create("database", Some tweetsMaster)
+    let sentimentActor = create("sentiment", Some tweetsMaster)
