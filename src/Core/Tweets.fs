@@ -192,7 +192,7 @@ module TweetsMaster =
     type TweetsMasterActor(session: ISession, credentials : ITwitterCredentials) as this =
         inherit ReceiveActor()
 
-        let mutable setntimentActor: IActorRef = null
+        let mutable sentimentActor: IActorRef = null
         let mutable tweetDbActor: IActorRef = null
         let mutable twitterApiActor: IActorRef = null
 
@@ -200,7 +200,7 @@ module TweetsMaster =
             this.ReceiveAsync<GetTweetsByKey>(fun msg -> this.HandleGetTweetsByKey(msg))
 
         override this.PreStart() =
-            setntimentActor <- Akka.Actor.Internal.InternalCurrentActorCellKeeper.Current.ActorOf(Props.Create<SentimentActor>(defaultClassificatorConfig), Actors.sentimentActor.Name)
+            sentimentActor <- Akka.Actor.Internal.InternalCurrentActorCellKeeper.Current.ActorOf(Props.Create<SentimentActor>(defaultClassificatorConfig), Actors.sentimentActor.Name)
             tweetDbActor <- Akka.Actor.Internal.InternalCurrentActorCellKeeper.Current.ActorOf(Props.Create<TweetsStorageActor>(session), Actors.tweetStorageActor.Name)
             twitterApiActor <- Akka.Actor.Internal.InternalCurrentActorCellKeeper.Current.ActorOf(Props.Create<TwitterApiActor>(credentials), Actors.twitterApiActor.Name)
             base.PreStart()
@@ -217,8 +217,16 @@ module TweetsMaster =
                     let! api = twitterApiActor.Ask<Tweets option>(msg) |> Async.AwaitTask
                     match api with
                     | Some apiTweets ->
-                        let sentiments = List.map ((fun tweet -> tweet, setntimentActor.Ask<ClassificationScore<Emotion>>({ text = tweet.Text })) >> (fun (t, s) -> t.UpdateSentiment(s |> Async.RunSynchronously))) apiTweets.value
-                        //tweetDbActor.Tell(Store(apiTweets), self)
+                        let sentiments = apiTweets.value
+                                            |> List.map ((fun tweet -> async {
+                                                                                let! res = sentimentActor.Ask<ClassificationScore<Emotion>>({ text = tweet.Text }) |> Async.AwaitTask
+                                                                                sentimentActor.Tell({ trainQuery =  { value = tweet.Text; category = Emotion.Positive; weight = None } })
+                                                                                return tweet.UpdateSentiment(res)
+                                                                             })) |> Async.Parallel |> Async.RunSynchronously
+                        tweetDbActor.Tell(Store({ value = (sentiments |> Array.toList)}))
+                        sender.Tell({ value = (sentiments |> Array.toList)})
+                    | None ->
+                        sender.Tell([])
             } |> Async.StartAsTask :> System.Threading.Tasks.Task
 
 
