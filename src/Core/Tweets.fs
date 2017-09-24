@@ -4,6 +4,7 @@ module Messages =
     open System
     open SentimentFS.AnalysisServer.Core.Sentiment
     open Cassandra
+    open SentimentFS.NaiveBayes.Dto
 
     [<CLIMutable>]
     type Tweet = { Id: Guid
@@ -14,16 +15,20 @@ module Messages =
                    Lang: string
                    Longitude: double
                    Latitude: double
-                   Sentiment: Emotion }
-        with static member FromCassandraRow(x: Row) = { Id = x.GetValue<Guid>("id")
-                                                        IdStr = x.GetValue<string>("id_str")
-                                                        Text = x.GetValue<string>("text")
-                                                        Key = x.GetValue<string>("key")
-                                                        Date = x.GetValue<DateTime>("date")
-                                                        Lang = x.GetValue<string>("lang")
-                                                        Longitude = x.GetValue<double>("longitude")
-                                                        Latitude = x.GetValue<double>("latitude")
-                                                        Sentiment = (LanguagePrimitives.EnumOfValue(x.GetValue<int>("sentiment"))) }
+                   Sentiment: Emotion } with
+        static member FromCassandraRow(x: Row) = { Id = x.GetValue<Guid>("id")
+                                                   IdStr = x.GetValue<string>("id_str")
+                                                   Text = x.GetValue<string>("text")
+                                                   Key = x.GetValue<string>("key")
+                                                   Date = x.GetValue<DateTime>("date")
+                                                   Lang = x.GetValue<string>("lang")
+                                                   Longitude = x.GetValue<double>("longitude")
+                                                   Latitude = x.GetValue<double>("latitude")
+                                                   Sentiment = (LanguagePrimitives.EnumOfValue(x.GetValue<int>("sentiment"))) }
+        member this.UpdateSentiment(score: ClassificationScore<Emotion>) =
+            let bestEmotion, _ = score.score |> Map.toList |> List.maxBy(fun (emotion, value) -> value)
+            { this with Sentiment = bestEmotion }
+
 
 
     type Tweets = { value: Tweet list }
@@ -182,6 +187,7 @@ module TweetsMaster =
     open SentimentFS.AnalysisServer.Core.Sentiment
     open TweetsStorage
     open TwitterApiClient
+    open SentimentFS.NaiveBayes.Dto
 
     type TweetsMasterActor(session: ISession, credentials : ITwitterCredentials) as this =
         inherit ReceiveActor()
@@ -191,7 +197,7 @@ module TweetsMaster =
         let mutable twitterApiActor: IActorRef = null
 
         do
-            this.Receive<GetTweetsByKey>(this.HandleGetTweetsByKey)
+            this.ReceiveAsync<GetTweetsByKey>(fun msg -> this.HandleGetTweetsByKey(msg))
 
         override this.PreStart() =
             setntimentActor <- Akka.Actor.Internal.InternalCurrentActorCellKeeper.Current.ActorOf(Props.Create<SentimentActor>(defaultClassificatorConfig), Actors.sentimentActor.Name)
@@ -200,7 +206,19 @@ module TweetsMaster =
             base.PreStart()
 
         member this.HandleGetTweetsByKey(msg: GetTweetsByKey) =
-            tweetDbActor.Tell(GetByKey(msg.key), this.Sender)
-            true
+            let sender = this.Sender
+            let self = this.Self
+            async {
+                let! result = tweetDbActor.Ask<Tweets option>(GetByKey(msg.key)) |> Async.AwaitTask
+                match result with
+                | Some tweets ->
+                    sender.Tell(tweets)
+                | None ->
+                    let! api = twitterApiActor.Ask<Tweets option>(msg) |> Async.AwaitTask
+                    match api with
+                    | Some apiTweets ->
+                        let sentiments = List.map ((fun tweet -> tweet, setntimentActor.Ask<ClassificationScore<Emotion>>({ text = tweet.Text })) >> (fun (t, s) -> t.UpdateSentiment(s |> Async.RunSynchronously))) apiTweets.value
+                        //tweetDbActor.Tell(Store(apiTweets), self)
+            } |> Async.StartAsTask :> System.Threading.Tasks.Task
 
 

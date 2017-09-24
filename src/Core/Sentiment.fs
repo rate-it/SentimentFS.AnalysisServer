@@ -9,8 +9,6 @@ module Sentiment =
     open SentimentFS.TextUtilities
     open Akka.Actor
 
-    open SentimentFS.NaiveBayes.Dto
-
     type Emotion =
         | VeryNegative = -2
         | Negative = -1
