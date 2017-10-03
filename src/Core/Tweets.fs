@@ -25,7 +25,7 @@ module Messages =
                                                    Longitude = x.GetValue<double>("longitude")
                                                    Latitude = x.GetValue<double>("latitude")
                                                    Sentiment = (LanguagePrimitives.EnumOfValue(x.GetValue<int>("sentiment"))) }
-        member this.UpdateSentiment(score: ClassificationScore<Emotion>) =
+        member this.WithNewSentiment(score: ClassificationScore<Emotion>) =
             let bestEmotion, _ = score.score |> Map.toList |> List.maxBy(fun (emotion, value) -> value)
             { this with Sentiment = bestEmotion }
 
@@ -221,7 +221,7 @@ module TweetsMaster =
                                             |> List.map ((fun tweet -> async {
                                                                                 let! res = sentimentActor.Ask<ClassificationScore<Emotion>>({ text = tweet.Text }) |> Async.AwaitTask
                                                                                 sentimentActor.Tell({ trainQuery =  { value = tweet.Text; category = Emotion.Positive; weight = None } })
-                                                                                return tweet.UpdateSentiment(res)
+                                                                                return tweet.WithNewSentiment(res)
                                                                              })) |> Async.Parallel |> Async.RunSynchronously
                         let tweetsList = sentiments |> Array.toList
                         tweetDbActor.Tell(Store({ value = tweetsList}))
