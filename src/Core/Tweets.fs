@@ -223,10 +223,11 @@ module TweetsMaster =
                                                                                 sentimentActor.Tell({ trainQuery =  { value = tweet.Text; category = Emotion.Positive; weight = None } })
                                                                                 return tweet.UpdateSentiment(res)
                                                                              })) |> Async.Parallel |> Async.RunSynchronously
-                        tweetDbActor.Tell(Store({ value = (sentiments |> Array.toList)}))
-                        sender.Tell({ value = (sentiments |> Array.toList)})
+                        let tweetsList = sentiments |> Array.toList
+                        tweetDbActor.Tell(Store({ value = tweetsList}))
+                        sender.Tell(Some { value = tweetsList})
                     | None ->
-                        sender.Tell([])
+                        sender.Tell(None)
             } |> Async.StartAsTask :> System.Threading.Tasks.Task
 
 
