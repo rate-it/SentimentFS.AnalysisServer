@@ -5,3 +5,4 @@ SentimentFS.Stemmer
 Hopac
 CassandraCSharpDriver
 TweetinviAPI
+Akka.Serialization.Hyperion

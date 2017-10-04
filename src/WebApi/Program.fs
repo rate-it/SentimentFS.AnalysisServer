@@ -3,6 +3,7 @@
 open System
 open Suave
 open Akka.Actor
+open Akka.Configuration
 open SentimentFS.AnalysisServer
 open SentimentFS.AnalysisServer.WebApi.Analysis
 open SentimentFS.AnalysisServer.Core.Sentiment
@@ -10,9 +11,11 @@ open SentimentFS.AnalysisServer.Core.Actor
 
 module Program =
     open SentimentFS.NaiveBayes.Dto
+    open System.IO
 
+    let akkaConfig = ConfigurationFactory.ParseString(File.ReadAllText("akka.json"))
     let actorSystem =
-            ActorSystem.Create("sentimentfs")
+            ActorSystem.Create("sentimentfs", akkaConfig)
 
     let sentimentActor =
             actorSystem.ActorOf(Props.Create<SentimentActor>(Some defaultClassificatorConfig), Actors.sentimentActor.Name)
