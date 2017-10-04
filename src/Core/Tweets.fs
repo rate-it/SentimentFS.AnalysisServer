@@ -192,7 +192,6 @@ module TweetsMaster =
     type TweetsMasterActor(session: ISession, credentials : ITwitterCredentials) as this =
         inherit ReceiveActor()
 
-        let mutable sentimentActor: IActorRef = null
         let mutable tweetDbActor: IActorRef = null
         let mutable twitterApiActor: IActorRef = null
 
@@ -200,7 +199,6 @@ module TweetsMaster =
             this.ReceiveAsync<GetTweetsByKey>(fun msg -> this.HandleGetTweetsByKey(msg))
 
         override this.PreStart() =
-            sentimentActor <- Akka.Actor.Internal.InternalCurrentActorCellKeeper.Current.ActorOf(Props.Create<SentimentActor>(defaultClassificatorConfig), Actors.sentimentActor.Name)
             tweetDbActor <- Akka.Actor.Internal.InternalCurrentActorCellKeeper.Current.ActorOf(Props.Create<TweetsStorageActor>(session), Actors.tweetStorageActor.Name)
             twitterApiActor <- Akka.Actor.Internal.InternalCurrentActorCellKeeper.Current.ActorOf(Props.Create<TwitterApiActor>(credentials), Actors.twitterApiActor.Name)
             base.PreStart()
@@ -208,6 +206,7 @@ module TweetsMaster =
         member this.HandleGetTweetsByKey(msg: GetTweetsByKey) =
             let sender = this.Sender
             let self = this.Self
+            let sentimentActor = Akka.Actor.Internal.InternalCurrentActorCellKeeper.Current.ActorSelection(Actors.sentimentActor.Path)
             async {
                 let! result = tweetDbActor.Ask<Tweets option>(GetByKey(msg.key)) |> Async.AwaitTask
                 match result with

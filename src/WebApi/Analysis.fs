@@ -7,6 +7,8 @@ module Analysis =
     open Suave.Operators
     open Suave.Successful
     open SentimentFS.AnalysisServer.Core.Analysis
+    open SentimentFS.AnalysisServer.Core.Sentiment
+    open SentimentFS.AnalysisServer.Core.Actor
     open Cassandra
     open Tweetinvi
 
@@ -18,14 +20,16 @@ module Analysis =
             Cluster
                 .Builder()
                 .AddContactPoint("127.0.0.1")
-                .WithPort(8881)
                 .WithDefaultKeyspace("sentiment_fs")
                 .Build()
 
         let session = cluster.ConnectAndCreateDefaultKeyspaceIfNotExists()
 
         let analysisActor =
-            actorSystem.ActorOf(Props.Create<AnalysisActor>())
+            actorSystem.ActorOf(Props.Create<AnalysisActor>(), Actors.analysisActor.Name)
+
+        let sentimentActor =
+            actorSystem.ActorOf(Props.Create<SentimentActor>(), Actors.sentimentActor.Name)
 
         let credientials = Auth.SetUserCredentials("", "", "", "")
 
