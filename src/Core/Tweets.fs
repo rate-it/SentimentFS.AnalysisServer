@@ -25,6 +25,15 @@ module Messages =
                                                    Longitude = x.GetValue<double>("longitude")
                                                    Latitude = x.GetValue<double>("latitude")
                                                    Sentiment = (LanguagePrimitives.EnumOfValue(x.GetValue<int>("sentiment"))) }
+        static member Zero () = { Id = Guid.NewGuid()
+                                  IdStr = ""
+                                  Text = ""
+                                  Key = ""
+                                  Date = DateTime.Now
+                                  Lang = ""
+                                  Longitude = 0.0
+                                  Latitude = 0.0
+                                  Sentiment = Emotion.Neutral }
         member this.WithNewSentiment(score: ClassificationScore<Emotion>) =
             let bestEmotion, _ = score.score |> Map.toList |> List.maxBy(fun (emotion, value) -> value)
             { this with Sentiment = bestEmotion }
