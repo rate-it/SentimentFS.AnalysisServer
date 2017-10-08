@@ -115,6 +115,7 @@ module TweetsStorage =
     type TweetsStorageActor(session: ISession) as this =
         inherit ReceiveActor()
         do
+            createTweetsCollectionIfNotExists(session) |> ignore
             this.ReceiveAsync<TweetsStorageMessage>(fun msg -> this.Handle(msg))
         member this.Handle(msg: TweetsStorageMessage) =
             let sender = this.Sender
