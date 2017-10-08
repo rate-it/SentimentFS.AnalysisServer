@@ -78,7 +78,7 @@ module TweetsStorage =
                             longitude double,
                             latitude double,
                             sentiment int,
-                            PRIMARY KEY(key, id)
+                            PRIMARY KEY(id, key)
                           );
                         """)
 
@@ -86,7 +86,7 @@ module TweetsStorage =
         async {
             let batch = BatchStatement()
             let query = session.Prepare("""
-                            INSERT INTO tweets (id, id_str, text, key, date, lang, longitude, latitude, sentiment) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                            INSERT INTO tweets (id, id_str, text, key, date, lang, longitude, latitude, sentiment) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
                         """)
             for tweet in tweets.value do
                 query.Bind(tweet.Id, tweet.IdStr, tweet.Text, tweet.Key, tweet.Date, tweet.Lang, tweet.Longitude, tweet.Latitude, tweet.Sentiment) |> batch.Add |> ignore
@@ -96,7 +96,7 @@ module TweetsStorage =
 
     let private getByKey (key:string) (session: ISession) =
         async {
-            let! query = session.PrepareAsync("SELECT id, id_str, text, key, date, lang, longitude, latitude, sentiment FROM tweets WHERE key=?") |> Async.AwaitTask
+            let! query = session.PrepareAsync("SELECT id, id_str, text, key, date, lang, longitude, latitude, sentiment FROM tweets WHERE key=? ALLOW FILTERING;") |> Async.AwaitTask
             let! result = session.ExecuteAsync(query.Bind(key)) |> Async.AwaitTask
             return match (result.GetRows()) |> Seq.toList with
                    | [] -> None
