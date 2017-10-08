@@ -30,6 +30,9 @@ module Program =
         | null -> defaultVal
         | value -> value |> uint16
 
+    let getTwitterApiCredentialsFromEnviroment(): Cre =
+
+
     [<EntryPoint>]
     let main argv =
         // try

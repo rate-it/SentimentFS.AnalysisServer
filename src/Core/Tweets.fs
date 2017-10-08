@@ -143,6 +143,7 @@ module TwitterApiClient =
     open Tweetinvi.Parameters
 
     let private spawn(credentials: ITwitterCredentials) =
+        Auth.SetUserCredentials(credentials.ConsumerKey, credentials.ConsumerSecret, credentials.AccessToken, credentials.AccessTokenSecret) |> ignore
         MailboxProcessor.Start(fun agent ->
             let rec loop () =
                 async {
