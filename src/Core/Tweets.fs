@@ -143,6 +143,7 @@ module TwitterApiClient =
     open Tweetinvi.Parameters
 
     type TwitterCredentials = { ConsumerKey: string; ConsumerSecret: string; AccessToken: string; AccessTokenSecret: string }
+    with static member Zero() = { ConsumerKey = String.Empty; ConsumerSecret = String.Empty; AccessToken = String.Empty; AccessTokenSecret = String.Empty }
 
     let private spawn(credentials: TwitterCredentials) =
         Auth.SetUserCredentials(credentials.ConsumerKey, credentials.ConsumerSecret, credentials.AccessToken, credentials.AccessTokenSecret) |> ignore

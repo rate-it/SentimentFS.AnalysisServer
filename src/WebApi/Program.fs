@@ -13,6 +13,7 @@ open SentimentFS.AnalysisServer.Core.Tweets.TwitterApiClient
 module Program =
     open SentimentFS.NaiveBayes.Dto
     open System.IO
+    open SentimentFS.AnalysisServer.Core.Tweets.Messages
 
     let akkaConfig = ConfigurationFactory.ParseString(File.ReadAllText("akka.json"))
     let actorSystem =
@@ -31,15 +32,22 @@ module Program =
         | null -> defaultVal
         | value -> value |> uint16
 
-    let getTwitterApiCredentialsFromEnviroment: TwitterCredentials option =
+    let twitterApiCredentialsFromEnviroment: TwitterCredentials =
         let consumerKey = GetEnvVar "CONSUMER_KEY"
         let consumerSecret = GetEnvVar "CONSUMER_SECRET"
         let accessToken = GetEnvVar "ACCESS_TOKEN"
         let accessTokenSecret = GetEnvVar "ACCESS_TOKEN_SECRET"
         match consumerKey, consumerSecret, accessToken, accessTokenSecret with
         | Some ck, Some cs, Some at, Some ats ->
-            Some { ConsumerKey = ck; ConsumerSecret = cs; AccessToken = at; AccessTokenSecret = ats }
-        | _ -> None
+            { ConsumerKey = ck; ConsumerSecret = cs; AccessToken = at; AccessTokenSecret = ats }
+        | _ -> TwitterCredentials.Zero()
+
+    let sentimentInitFileUrl: string =
+        match GetEnvVar "SENTIMENT" with
+        | Some x -> x
+        | None ->  "https://raw.githubusercontent.com/wooorm/afinn-96/master/index.json"
+
+    let twitterApiActor = actorSystem.ActorOf(Props.Create<TwitterApiActor>(twitterApiCredentialsFromEnviroment))
 
     [<EntryPoint>]
     let main argv =
@@ -53,6 +61,7 @@ module Program =
         //     System.Console.WriteLine(ex.Message)
         //     System.Console.ForegroundColor <- color
         //     1
-        (initSentimentActor("https://raw.githubusercontent.com/wooorm/afinn-96/master/index.json") sentimentActor)
+        (initSentimentActor(sentimentInitFileUrl) sentimentActor)
         printfn "%A" (sentimentActor.Ask<ClassificationScore<Emotion>>({ text = "My brother hate java" }) |> Async.AwaitTask |> Async.RunSynchronously)
+        printfn "%A" (twitterApiActor.Ask<Tweets option>({ key = "fsharp" }) |> Async.AwaitTask |> Async.RunSynchronously)
         0

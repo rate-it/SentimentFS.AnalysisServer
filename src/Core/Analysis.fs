@@ -31,7 +31,7 @@ type AnalysisActor() as this =
     inherit ReceiveActor()
     do this.Receive<GetAnalysisForKey>(this.HandleAsync)
 
-    member private this.AnalyzeTweets(tweets: Tweets) : AnalysisScore = null
+    member private this.AnalyzeTweets(tweets: Tweets) : AnalysisScore = AnalysisScore.Zero("")
 
     member this.HandleAsync(msg: GetAnalysisForKey) =
         let tweets: Tweets = { value = [ Tweet.Zero() ] }
