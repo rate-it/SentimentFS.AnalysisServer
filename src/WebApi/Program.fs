@@ -15,7 +15,7 @@ module Program =
     open System.IO
     open SentimentFS.AnalysisServer.Core.Tweets.Messages
 
-    let akkaConfig = ConfigurationFactory.ParseString(File.ReadAllText("akka.json"))
+    let akkaConfig = ConfigurationFactory.ParseString(File.ReadAllText("./akka.json"))
     let actorSystem =
             ActorSystem.Create("sentimentfs", akkaConfig)
 
@@ -61,6 +61,7 @@ module Program =
         //     System.Console.WriteLine(ex.Message)
         //     System.Console.ForegroundColor <- color
         //     1
+        printfn "%A" twitterApiCredentialsFromEnviroment
         (initSentimentActor(sentimentInitFileUrl) sentimentActor)
         printfn "%A" (sentimentActor.Ask<ClassificationScore<Emotion>>({ text = "My brother hate java" }) |> Async.AwaitTask |> Async.RunSynchronously)
         printfn "%A" (twitterApiActor.Ask<Tweets option>({ key = "fsharp" }) |> Async.AwaitTask |> Async.RunSynchronously)
