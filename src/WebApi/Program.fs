@@ -31,7 +31,7 @@ module Program =
         | null -> defaultVal
         | value -> value |> uint16
 
-    let getTwitterApiCredentialsFromEnviroment(): TwitterCredentials option =
+    let getTwitterApiCredentialsFromEnviroment: TwitterCredentials option =
         let consumerKey = GetEnvVar "CONSUMER_KEY"
         let consumerSecret = GetEnvVar "CONSUMER_SECRET"
         let accessToken = GetEnvVar "ACCESS_TOKEN"
@@ -40,7 +40,6 @@ module Program =
         | Some ck, Some cs, Some at, Some ats ->
             Some { ConsumerKey = ck; ConsumerSecret = cs; AccessToken = at; AccessTokenSecret = ats }
         | _ -> None
-
 
     [<EntryPoint>]
     let main argv =
