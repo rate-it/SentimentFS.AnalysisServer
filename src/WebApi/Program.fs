@@ -8,6 +8,7 @@ open SentimentFS.AnalysisServer
 open SentimentFS.AnalysisServer.WebApi.Analysis
 open SentimentFS.AnalysisServer.Core.Sentiment
 open SentimentFS.AnalysisServer.Core.Actor
+open SentimentFS.AnalysisServer.Core.Tweets.TwitterApiClient
 
 module Program =
     open SentimentFS.NaiveBayes.Dto
@@ -30,7 +31,15 @@ module Program =
         | null -> defaultVal
         | value -> value |> uint16
 
-    let getTwitterApiCredentialsFromEnviroment(): Cre =
+    let getTwitterApiCredentialsFromEnviroment(): TwitterCredentials option =
+        let consumerKey = GetEnvVar "CONSUMER_KEY"
+        let consumerSecret = GetEnvVar "CONSUMER_SECRET"
+        let accessToken = GetEnvVar "ACCESS_TOKEN"
+        let accessTokenSecret = GetEnvVar "ACCESS_TOKEN_SECRET"
+        match consumerKey, consumerSecret, accessToken, accessTokenSecret with
+        | Some ck, Some cs, Some at, Some ats ->
+            Some { ConsumerKey = ck; ConsumerSecret = cs; AccessToken = at; AccessTokenSecret = ats }
+        | _ -> None
 
 
     [<EntryPoint>]

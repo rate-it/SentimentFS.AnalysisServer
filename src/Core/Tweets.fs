@@ -142,7 +142,9 @@ module TwitterApiClient =
     open Tweetinvi.Models
     open Tweetinvi.Parameters
 
-    let private spawn(credentials: ITwitterCredentials) =
+    type TwitterCredentials = { ConsumerKey: string; ConsumerSecret: string; AccessToken: string; AccessTokenSecret: string }
+
+    let private spawn(credentials: TwitterCredentials) =
         Auth.SetUserCredentials(credentials.ConsumerKey, credentials.ConsumerSecret, credentials.AccessToken, credentials.AccessTokenSecret) |> ignore
         MailboxProcessor.Start(fun agent ->
             let rec loop () =
@@ -174,7 +176,7 @@ module TwitterApiClient =
             loop()
         )
 
-    type TwitterApiActor(credentials: ITwitterCredentials) as this =
+    type TwitterApiActor(credentials: TwitterCredentials) as this =
         inherit ReceiveActor()
         do
             this.ReceiveAsync<GetTweetsByKey>(fun msg -> this.Handle(msg))
