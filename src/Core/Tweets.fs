@@ -22,7 +22,7 @@ module Messages =
                                                    Lang = x.GetValue<string>("lang")
                                                    Longitude = x.GetValue<double>("longitude")
                                                    Latitude = x.GetValue<double>("latitude")
-                                                   Sentiment = (LanguagePrimitives.EnumOfValue(x.GetValue<int>("sentiment"))) }
+                                                   Sentiment = (enum<Emotion>(x.GetValue<int>("sentiment"))) }
         static member Zero () = { IdStr = ""
                                   Text = ""
                                   Key = ""
@@ -80,13 +80,12 @@ module TweetsStorage =
 
     let private store (tweets: Tweets) (session: ISession) =
         async {
-            printfn "witam %A" tweets
             let batch = BatchStatement()
             let query = session.Prepare("""
                             INSERT INTO tweets (id_str, text, key, date, lang, longitude, latitude, sentiment) VALUES (?, ?, ?, ?, ?, ?, ?, ?);
                         """)
             for tweet in tweets.value do
-                query.Bind(tweet.IdStr, tweet.Text, tweet.Key, tweet.Date, tweet.Lang, tweet.Longitude, tweet.Latitude, tweet.Sentiment) |> batch.Add |> ignore
+                query.Bind(tweet.IdStr, tweet.Text, tweet.Key, tweet.Date, tweet.Lang, tweet.Longitude, tweet.Latitude, tweet.Sentiment |> int) |> batch.Add |> ignore
 
             session.ExecuteAsync(batch) |> Async.AwaitTask |> ignore
         }

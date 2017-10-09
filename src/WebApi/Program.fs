@@ -44,7 +44,7 @@ module Program =
         let cluster = Cassandra.cluster(appconfig)
         let session = cluster |> Cassandra.session appconfig
         let dbActor = actorSystem.ActorOf(Props.Create<TweetsStorageActor>(session))
-        let tweets: Tweets = { value = [ { Tweet.Zero() with Key = "test" } ] }
+        let tweets: Tweets = { value = [ { Tweet.Zero() with Key = "test2" ; Sentiment = Emotion.Positive } ] }
         dbActor.Tell(Store(tweets))
         // try
         //     WebServer.start (getPortsOrDefault 8080us)
@@ -56,6 +56,8 @@ module Program =
         //     System.Console.WriteLine(ex.Message)
         //     System.Console.ForegroundColor <- color
         //     1
-        Threading.Thread.Sleep(10000)
-        printfn "%A" appconfig
+        let tweets = dbActor.Ask<Tweets option>(GetByKey("test2")) |> Async.AwaitTask |> Async.RunSynchronously
+        let keys = dbActor.Ask<string list option>(GetSearchKeys) |> Async.AwaitTask |> Async.RunSynchronously
+
+        printfn "%A-%A" tweets keys
         0
