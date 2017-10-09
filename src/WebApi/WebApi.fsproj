@@ -12,6 +12,7 @@
     <ItemGroup>
         <Compile Include="Config.fs" />
         <Compile Include="Storage.fs" />
+        <Compile Include="Tweets.fs" />
         <Compile Include="Analysis.fs" />
         <Compile Include="WebServer.fs" />
         <Compile Include="Program.fs" />
