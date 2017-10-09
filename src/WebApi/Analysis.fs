@@ -13,6 +13,7 @@ module Analysis =
     open Tweetinvi
     open System.Net.Http
     open Newtonsoft.Json
+    open SentimentFS.AnalysisServer.WebApi.Config
 
     let intToEmotion (value: int): Emotion =
         match value with
@@ -23,7 +24,8 @@ module Analysis =
         | 4 | 5 -> Emotion.VeryPositive
         | _ -> Emotion.Neutral
 
-    let initSentimentActor (trainDataUrl: string) (sentimentActor: IActorRef) =
+    let createSentimentActor (trainDataUrl: string) (system: ActorSystem) =
+        let sentimentActor = system.ActorOf(Props.Create<SentimentActor>(), Actors.sentimentActor.Name)
         let httpResult = async {
             use client = new HttpClient()
             let! result = client.GetAsync(System.Uri(trainDataUrl)) |> Async.AwaitTask
@@ -37,12 +39,9 @@ module Analysis =
 
         for struct (word, emotion) in emotions do
             sentimentActor.Tell({ trainQuery =  { value = word; category = emotion; weight = None } })
+        sentimentActor
 
-
-    let analysisController() =
-        let actorSystem =
-            ActorSystem.Create("sentimentfs")
-
+    let analysisController(config: AppConfig, system: ActorSystem) =
         // let cluster =
         //     Cluster
         //         .Builder()
@@ -53,12 +52,9 @@ module Analysis =
         // let session = cluster.ConnectAndCreateDefaultKeyspaceIfNotExists()
 
         let analysisActor =
-            actorSystem.ActorOf(Props.Create<AnalysisActor>(), Actors.analysisActor.Name)
+            system.ActorOf(Props.Create<AnalysisActor>(), Actors.analysisActor.Name)
 
-        let sentimentActor =
-            actorSystem.ActorOf(Props.Create<SentimentActor>(), Actors.sentimentActor.Name)
-
-        let credientials = Auth.SetUserCredentials("", "", "", "")
+        let sentimentActor = createSentimentActor config.Sentiment.InitFileUrl system
 
         let getAnalysisResultByKey(key):WebPart =
             fun (x : HttpContext) ->

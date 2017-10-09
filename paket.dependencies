@@ -19,6 +19,8 @@ nuget xunit.runner.visualstudio >= 2.3.0
 nuget Akka.TestKit.Xunit2
 nuget Microsoft.Extensions.Configuration.Json
 nuget Microsoft.Extensions.Configuration.EnvironmentVariables
+nuget Microsoft.Extensions.Configuration.CommandLine
+nuget Microsoft.Extensions.Configuration.Binder
 nuget Expecto
 clitool Microsoft.DotNet.Watcher.Tools
 clitool dotnet-xunit >= 2.3.0

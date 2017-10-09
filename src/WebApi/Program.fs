@@ -5,6 +5,7 @@ open Suave
 open Akka.Actor
 open Akka.Configuration
 open Microsoft.Extensions.Configuration
+open Microsoft.Extensions.Configuration
 open SentimentFS.AnalysisServer
 open SentimentFS.AnalysisServer.WebApi.Analysis
 open SentimentFS.AnalysisServer.Core.Sentiment
@@ -15,15 +16,8 @@ module Program =
     open SentimentFS.NaiveBayes.Dto
     open System.IO
     open SentimentFS.AnalysisServer.Core.Tweets.Messages
-
-    let akkaConfig = ConfigurationFactory.ParseString(File.ReadAllText("./akka.json"))
-    let appConfig = ConfigurationBuilder().AddJsonFile("appsettings.json").AddEnvironmentVariables();
-
-    let actorSystem =
-            ActorSystem.Create("sentimentfs", akkaConfig)
-
-    let sentimentActor =
-            actorSystem.ActorOf(Props.Create<SentimentActor>(Some defaultClassificatorConfig), Actors.sentimentActor.Name)
+    open SentimentFS.AnalysisServer.WebApi.Config
+    open Cassandra
 
     let GetEnvVar var =
         match System.Environment.GetEnvironmentVariable(var) with
@@ -35,25 +29,23 @@ module Program =
         | null -> defaultVal
         | value -> value |> uint16
 
-    let twitterApiCredentialsFromEnviroment: TwitterCredentials =
-        let consumerKey = GetEnvVar "CONSUMER_KEY"
-        let consumerSecret = GetEnvVar "CONSUMER_SECRET"
-        let accessToken = GetEnvVar "ACCESS_TOKEN"
-        let accessTokenSecret = GetEnvVar "ACCESS_TOKEN_SECRET"
-        match consumerKey, consumerSecret, accessToken, accessTokenSecret with
-        | Some ck, Some cs, Some at, Some ats ->
-            { ConsumerKey = ck; ConsumerSecret = cs; AccessToken = at; AccessTokenSecret = ats }
-        | _ -> TwitterCredentials.Zero()
-
-    let sentimentInitFileUrl: string =
-        match GetEnvVar "SENTIMENT" with
-        | Some x -> x
-        | None ->  "https://raw.githubusercontent.com/wooorm/afinn-96/master/index.json"
-
-    let twitterApiActor = actorSystem.ActorOf(Props.Create<TwitterApiActor>(twitterApiCredentialsFromEnviroment))
 
     [<EntryPoint>]
     let main argv =
+        let akkaConfig = ConfigurationFactory.ParseString(File.ReadAllText("./akka.json"))
+        let configurationRoot = ConfigurationBuilder().AddJsonFile("appsettings.json").AddEnvironmentVariables().AddCommandLine(argv).Build();
+        let appconfig = AppConfig.Zero()
+        configurationRoot.Bind(appconfig) |> ignore
+
+        let actorSystem = ActorSystem.Create("sentimentfs", akkaConfig)
+        let cluster =
+            Cluster
+                .Builder()
+                .AddContactPoint("127.0.0.1")
+                .WithDefaultKeyspace("sentiment_fs")
+                .Build()
+
+        let session = cluster.ConnectAndCreateDefaultKeyspaceIfNotExists()
         // try
         //     WebServer.start (getPortsOrDefault 8080us)
         //     0 // return an integer exit code
@@ -64,8 +56,5 @@ module Program =
         //     System.Console.WriteLine(ex.Message)
         //     System.Console.ForegroundColor <- color
         //     1
-        printfn "%A" twitterApiCredentialsFromEnviroment
-        (initSentimentActor(sentimentInitFileUrl) sentimentActor)
-        printfn "%A" (sentimentActor.Ask<ClassificationScore<Emotion>>({ text = "My brother hate java" }) |> Async.AwaitTask |> Async.RunSynchronously)
-        printfn "%A" (twitterApiActor.Ask<Tweets option>({ key = "fsharp" }) |> Async.AwaitTask |> Async.RunSynchronously)
+        printfn "%A" appconfig
         0

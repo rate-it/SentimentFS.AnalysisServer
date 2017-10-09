@@ -1,8 +1,15 @@
 namespace SentimentFS.AnalysisServer.WebApi.Config
 open System.Collections.Generic
+open SentimentFS.AnalysisServer.Core.Tweets.TwitterApiClient
 
 [<CLIMutable>]
 type CassandraConfig = { KeyspaceName: string; EndPoints: string[]; IsAuthenticated: bool; Username: string; Password: string; Replications: IDictionary<string, string> }
 
 [<CLIMutable>]
-type AppConfig = { Cassandra: CassandraConfig }
+type Sentiment = { InitFileUrl: string}
+
+[<CLIMutable>]
+type AppConfig = { Cassandra: CassandraConfig; Sentiment: Sentiment; TwitterApiCredentials: TwitterCredentials }
+with static member Zero() = { Cassandra = { KeyspaceName = ""; EndPoints = [||]; IsAuthenticated = false; Username = ""; Password = ""; Replications = Dictionary<string, string>() }
+                              Sentiment = { InitFileUrl = "" }
+                              TwitterApiCredentials = { ConsumerKey = ""; ConsumerSecret = ""; AccessToken = ""; AccessTokenSecret = "" } }
