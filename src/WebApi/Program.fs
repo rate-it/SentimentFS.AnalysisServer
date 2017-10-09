@@ -8,6 +8,7 @@ open Microsoft.Extensions.Configuration
 open Microsoft.Extensions.Configuration
 open SentimentFS.AnalysisServer
 open SentimentFS.AnalysisServer.WebApi.Analysis
+open SentimentFS.AnalysisServer.WebApi.Storage
 open SentimentFS.AnalysisServer.Core.Sentiment
 open SentimentFS.AnalysisServer.Core.Actor
 open SentimentFS.AnalysisServer.Core.Tweets.TwitterApiClient
@@ -18,6 +19,8 @@ module Program =
     open SentimentFS.AnalysisServer.Core.Tweets.Messages
     open SentimentFS.AnalysisServer.WebApi.Config
     open Cassandra
+    open SentimentFS.AnalysisServer.Core.Tweets.TweetsStorage
+    open SentimentFS.AnalysisServer.Core.Tweets.Messages
 
     let GetEnvVar var =
         match System.Environment.GetEnvironmentVariable(var) with
@@ -38,14 +41,11 @@ module Program =
         configurationRoot.Bind(appconfig) |> ignore
 
         let actorSystem = ActorSystem.Create("sentimentfs", akkaConfig)
-        let cluster =
-            Cluster
-                .Builder()
-                .AddContactPoint("127.0.0.1")
-                .WithDefaultKeyspace("sentiment_fs")
-                .Build()
-
-        let session = cluster.ConnectAndCreateDefaultKeyspaceIfNotExists()
+        let cluster = Cassandra.cluster(appconfig)
+        let session = cluster |> Cassandra.session appconfig
+        let dbActor = actorSystem.ActorOf(Props.Create<TweetsStorageActor>(session))
+        let tweets: Tweets = { value = [ { Tweet.Zero() with Key = "test" } ] }
+        dbActor.Tell(Store(tweets))
         // try
         //     WebServer.start (getPortsOrDefault 8080us)
         //     0 // return an integer exit code
@@ -56,5 +56,6 @@ module Program =
         //     System.Console.WriteLine(ex.Message)
         //     System.Console.ForegroundColor <- color
         //     1
+        Threading.Thread.Sleep(10000)
         printfn "%A" appconfig
         0

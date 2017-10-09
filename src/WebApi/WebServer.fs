@@ -15,7 +15,7 @@ module WebServer =
 
     let app =
         choose [
-            analysisController()
+            //analysisController()
         ]
     let start port =
         startWebServer defaultConfig app

@@ -7,8 +7,7 @@ module Messages =
     open SentimentFS.NaiveBayes.Dto
 
     [<CLIMutable>]
-    type Tweet = { Id: Guid
-                   IdStr: string
+    type Tweet = { IdStr: string
                    Text: string
                    Key: string
                    Date: DateTime
@@ -16,8 +15,7 @@ module Messages =
                    Longitude: double
                    Latitude: double
                    Sentiment: Emotion } with
-        static member FromCassandraRow(x: Row) = { Id = x.GetValue<Guid>("id")
-                                                   IdStr = x.GetValue<string>("id_str")
+        static member FromCassandraRow(x: Row) = { IdStr = x.GetValue<string>("id_str")
                                                    Text = x.GetValue<string>("text")
                                                    Key = x.GetValue<string>("key")
                                                    Date = x.GetValue<DateTime>("date")
@@ -25,8 +23,7 @@ module Messages =
                                                    Longitude = x.GetValue<double>("longitude")
                                                    Latitude = x.GetValue<double>("latitude")
                                                    Sentiment = (LanguagePrimitives.EnumOfValue(x.GetValue<int>("sentiment"))) }
-        static member Zero () = { Id = Guid.NewGuid()
-                                  IdStr = ""
+        static member Zero () = { IdStr = ""
                                   Text = ""
                                   Key = ""
                                   Date = DateTime.Now
@@ -69,7 +66,6 @@ module TweetsStorage =
     let private createTweetsCollectionIfNotExists (session: ISession) =
         session.Execute("""
                           CREATE TABLE IF NOT EXISTS tweets (
-                            id uuid,
                             id_str varchar,
                             text text,
                             key varchar,
@@ -78,25 +74,26 @@ module TweetsStorage =
                             longitude double,
                             latitude double,
                             sentiment int,
-                            PRIMARY KEY(id, key)
+                            PRIMARY KEY(key, id_str)
                           );
                         """)
 
     let private store (tweets: Tweets) (session: ISession) =
         async {
+            printfn "witam %A" tweets
             let batch = BatchStatement()
             let query = session.Prepare("""
-                            INSERT INTO tweets (id, id_str, text, key, date, lang, longitude, latitude, sentiment) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
+                            INSERT INTO tweets (id_str, text, key, date, lang, longitude, latitude, sentiment) VALUES (?, ?, ?, ?, ?, ?, ?, ?);
                         """)
             for tweet in tweets.value do
-                query.Bind(tweet.Id, tweet.IdStr, tweet.Text, tweet.Key, tweet.Date, tweet.Lang, tweet.Longitude, tweet.Latitude, tweet.Sentiment) |> batch.Add |> ignore
+                query.Bind(tweet.IdStr, tweet.Text, tweet.Key, tweet.Date, tweet.Lang, tweet.Longitude, tweet.Latitude, tweet.Sentiment) |> batch.Add |> ignore
 
             session.ExecuteAsync(batch) |> Async.AwaitTask |> ignore
         }
 
     let private getByKey (key:string) (session: ISession) =
         async {
-            let! query = session.PrepareAsync("SELECT id, id_str, text, key, date, lang, longitude, latitude, sentiment FROM tweets WHERE key=? ALLOW FILTERING;") |> Async.AwaitTask
+            let! query = session.PrepareAsync("SELECT id_str, text, key, date, lang, longitude, latitude, sentiment FROM tweets WHERE key=? ALLOW FILTERING;") |> Async.AwaitTask
             let! result = session.ExecuteAsync(query.Bind(key)) |> Async.AwaitTask
             return match (result.GetRows()) |> Seq.toList with
                    | [] -> None
@@ -161,8 +158,7 @@ module TwitterApiClient =
                         options.MaximumNumberOfResults <- 1000
                         let! queryResult = SearchAsync.SearchTweets(options) |> Async.AwaitTask
                         let result = queryResult
-                                        |> Seq.map(fun tweet -> { Id = Guid.NewGuid();
-                                                                  IdStr = tweet.TweetDTO.IdStr;
+                                        |> Seq.map(fun tweet -> { IdStr = tweet.TweetDTO.IdStr;
                                                                   Text = tweet.TweetDTO.Text;
                                                                   Lang = tweet.TweetDTO.Language.ToString();
                                                                   Key = key; Date = tweet.TweetDTO.CreatedAt;

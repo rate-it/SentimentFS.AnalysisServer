@@ -3,7 +3,7 @@ open System.Collections.Generic
 open SentimentFS.AnalysisServer.Core.Tweets.TwitterApiClient
 
 [<CLIMutable>]
-type CassandraConfig = { KeyspaceName: string; EndPoints: string[]; IsAuthenticated: bool; Username: string; Password: string; Replications: IDictionary<string, string> }
+type CassandraConfig = { KeyspaceName: string; EndPoints: string[]; IsAuthenticated: bool; Username: string; Password: string; Replications: Dictionary<string, string> }
 
 [<CLIMutable>]
 type Sentiment = { InitFileUrl: string}
