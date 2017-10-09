@@ -4,3 +4,6 @@ Akka
 Newtonsoft.Json
 Microsoft.DotNet.Watcher.Tools
 TweetinviAPI
+CassandraCSharpDriver
+Microsoft.Extensions.Configuration.Json
+Microsoft.Extensions.Configuration.EnvironmentVariables

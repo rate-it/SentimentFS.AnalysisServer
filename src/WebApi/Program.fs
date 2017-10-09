@@ -4,6 +4,7 @@ open System
 open Suave
 open Akka.Actor
 open Akka.Configuration
+open Microsoft.Extensions.Configuration
 open SentimentFS.AnalysisServer
 open SentimentFS.AnalysisServer.WebApi.Analysis
 open SentimentFS.AnalysisServer.Core.Sentiment
@@ -16,6 +17,8 @@ module Program =
     open SentimentFS.AnalysisServer.Core.Tweets.Messages
 
     let akkaConfig = ConfigurationFactory.ParseString(File.ReadAllText("./akka.json"))
+    let appConfig = ConfigurationBuilder().AddJsonFile("appsettings.json").AddEnvironmentVariables();
+
     let actorSystem =
             ActorSystem.Create("sentimentfs", akkaConfig)
 
