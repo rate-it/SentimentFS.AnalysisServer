@@ -42,15 +42,6 @@ module Analysis =
         sentimentActor
 
     let analysisController(config: AppConfig, system: ActorSystem) =
-        // let cluster =
-        //     Cluster
-        //         .Builder()
-        //         .AddContactPoint("127.0.0.1")
-        //         .WithDefaultKeyspace("sentiment_fs")
-        //         .Build()
-
-        // let session = cluster.ConnectAndCreateDefaultKeyspaceIfNotExists()
-
         let analysisActor =
             system.ActorOf(Props.Create<AnalysisActor>(), Actors.analysisActor.Name)
 
