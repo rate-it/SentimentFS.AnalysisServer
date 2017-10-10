@@ -6,6 +6,7 @@ module WebServer =
     open System.IO
     open SentimentFS.AnalysisServer.WebApi.Analysis
     open SentimentFS.AnalysisServer.WebApi.SentimentApi
+    open SentimentFS.AnalysisServer.WebApi.Tweets
     open Suave
     open Suave.Logging
     open System.Net
@@ -19,6 +20,7 @@ module WebServer =
     let app (config: AppConfig) (system: ActorSystem)  =
         choose [
             sentimentController config.Sentiment.InitFileUrl system
+            tweetsController config system
         ]
 
     let start (config: AppConfig) (system: ActorSystem) =

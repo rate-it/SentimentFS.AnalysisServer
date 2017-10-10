@@ -3,7 +3,6 @@ PUT /api/sentiment/trainer HTTP/1.1
 Host: localhost:8080
 Content-Type: application/json
 Cache-Control: no-cache
-Postman-Token: 9dd55a06-37d3-41d5-d50d-6591af3ad278
 
 { "value": "test", "category": -2, "weight" : 1 }
 
@@ -11,8 +10,12 @@ POST /api/sentiment/classification HTTP/1.1
 Host: localhost:8080
 Content-Type: application/json
 Cache-Control: no-cache
-Postman-Token: ee47cac3-f060-8cdb-7e27-a1ecf9545f97
 
 {
 	"text":"My brother hate java"
 }
+
+GET /api/tweets/fsharp HTTP/1.1
+Host: localhost:8080
+Content-Type: application/json
+Cache-Control: no-cache

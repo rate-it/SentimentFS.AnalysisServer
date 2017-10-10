@@ -198,7 +198,7 @@ module TweetsMaster =
     open TwitterApiClient
     open SentimentFS.NaiveBayes.Dto
 
-    type TweetsMasterActor(session: ISession, credentials : ITwitterCredentials) as this =
+    type TweetsMasterActor(session: ISession, credentials : TwitterCredentials) as this =
         inherit ReceiveActor()
 
         let mutable tweetDbActor: IActorRef = null
