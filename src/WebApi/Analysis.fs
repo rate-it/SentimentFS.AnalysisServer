@@ -15,7 +15,7 @@ module Analysis =
     open Newtonsoft.Json
     open SentimentFS.AnalysisServer.WebApi.Config
 
-    let analysisController(config: AppConfig, system: ActorSystem) =
+    let analysisController(config: AppConfig)(system: ActorSystem) =
         let analysisActor =
             system.ActorOf(Props.Create<AnalysisActor>(), Actors.analysisActor.Name)
 

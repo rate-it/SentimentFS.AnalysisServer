@@ -45,8 +45,8 @@ module SentimentApi =
             sentimentActor.Tell({ trainQuery =  { value = word; category = emotion; weight = None } })
         sentimentActor
 
-    let sentimentController (trainDataUrl: string) (system: ActorSystem) =
-        let sentimentActor = createSentimentActor trainDataUrl system
+    let sentimentController (config: AppConfig) (system: ActorSystem) =
+        let sentimentActor = createSentimentActor config.Sentiment.InitFileUrl system
         let classify(query: ClassifyMessage):WebPart =
             fun (x : HttpContext) ->
                 async {

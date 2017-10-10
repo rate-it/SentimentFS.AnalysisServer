@@ -1,6 +1,5 @@
 namespace SentimentFS.AnalysisServer.WebApi
 
-
 module WebServer =
 
     open System.IO
@@ -19,8 +18,9 @@ module WebServer =
 
     let app (config: AppConfig) (system: ActorSystem)  =
         choose [
-            sentimentController config.Sentiment.InitFileUrl system
+            sentimentController config system
             tweetsController config system
+            analysisController config system
         ]
 
     let start (config: AppConfig) (system: ActorSystem) =
