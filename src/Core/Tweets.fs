@@ -220,7 +220,7 @@ module TweetsMaster =
                 let! result = tweetDbActor.Ask<Tweets option>(GetByKey(msg.key)) |> Async.AwaitTask
                 match result with
                 | Some tweets ->
-                    sender.Tell(tweets)
+                    sender.Tell(Some tweets)
                 | None ->
                     let! api = twitterApiActor.Ask<Tweets option>(msg) |> Async.AwaitTask
                     match api with
