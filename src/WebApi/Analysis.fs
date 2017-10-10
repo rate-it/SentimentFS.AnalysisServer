@@ -15,37 +15,9 @@ module Analysis =
     open Newtonsoft.Json
     open SentimentFS.AnalysisServer.WebApi.Config
 
-    let intToEmotion (value: int): Emotion =
-        match value with
-        | -5 | -4 -> Emotion.VeryNegative
-        | -3 | -2 | -1 -> Emotion.Negative
-        | 0 -> Emotion.Neutral
-        | 1 | 2 | 3 -> Emotion.Positive
-        | 4 | 5 -> Emotion.VeryPositive
-        | _ -> Emotion.Neutral
-
-    let createSentimentActor (trainDataUrl: string) (system: ActorSystem) =
-        let sentimentActor = system.ActorOf(Props.Create<SentimentActor>(), Actors.sentimentActor.Name)
-        let httpResult = async {
-            use client = new HttpClient()
-            let! result = client.GetAsync(System.Uri(trainDataUrl)) |> Async.AwaitTask
-            result.EnsureSuccessStatusCode() |> ignore
-            return! result.Content.ReadAsStringAsync() |> Async.AwaitTask } |> Async.RunSynchronously
-
-        let emotions = httpResult
-                            |> JsonConvert.DeserializeObject<Map<string, int>>
-                            |> Map.toList
-                            |> List.map(fun (word, em) -> struct (word, em |> intToEmotion))
-
-        for struct (word, emotion) in emotions do
-            sentimentActor.Tell({ trainQuery =  { value = word; category = emotion; weight = None } })
-        sentimentActor
-
     let analysisController(config: AppConfig, system: ActorSystem) =
         let analysisActor =
             system.ActorOf(Props.Create<AnalysisActor>(), Actors.analysisActor.Name)
-
-        let sentimentActor = createSentimentActor config.Sentiment.InitFileUrl system
 
         let getAnalysisResultByKey(key):WebPart =
             fun (x : HttpContext) ->
