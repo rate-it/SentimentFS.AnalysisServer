@@ -20,7 +20,7 @@ module Sentiment =
         | Classify of string * AsyncReplyChannel<ClassificationScore<Emotion>>
         | Train of TrainingQuery<Emotion>
 
-
+    [<CLIMutable>]
     type ClassifyMessage = { text : string }
     type TrainMessage = { trainQuery : TrainingQuery<Emotion> }
 

@@ -1,10 +1,11 @@
-namespace SentimentFS.AnalysisServer
+namespace SentimentFS.AnalysisServer.WebApi
 
 
 module WebServer =
 
     open System.IO
     open SentimentFS.AnalysisServer.WebApi.Analysis
+    open SentimentFS.AnalysisServer.WebApi.SentimentApi
     open Suave
     open Suave.Logging
     open System.Net
@@ -12,10 +13,14 @@ module WebServer =
     open Suave.Operators
     open Suave.RequestErrors
     open Suave.Successful
+    open SentimentFS.AnalysisServer.WebApi.Config
+    open Akka.Actor
 
-    let app =
+    let app (config: AppConfig) (system: ActorSystem)  =
         choose [
-            //analysisController()
+            sentimentController config.Sentiment.InitFileUrl system
         ]
-    let start port =
-        startWebServer defaultConfig app
+
+    let start (config: AppConfig) (system: ActorSystem) =
+        let application = app config system
+        startWebServer defaultConfig application

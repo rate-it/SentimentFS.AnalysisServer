@@ -27,37 +27,22 @@ module Program =
         | null -> None
         | value -> Some value
 
-    let getPortsOrDefault defaultVal =
-        match System.Environment.GetEnvironmentVariable("APP_PORT") with
-        | null -> defaultVal
-        | value -> value |> uint16
-
-
     [<EntryPoint>]
     let main argv =
         let akkaConfig = ConfigurationFactory.ParseString(File.ReadAllText("./akka.json"))
         let configurationRoot = ConfigurationBuilder().AddJsonFile("appsettings.json").AddEnvironmentVariables().AddCommandLine(argv).Build();
         let appconfig = AppConfig.Zero()
         configurationRoot.Bind(appconfig) |> ignore
-
         let actorSystem = ActorSystem.Create("sentimentfs", akkaConfig)
-        let cluster = Cassandra.cluster(appconfig)
-        let session = cluster |> Cassandra.session appconfig
-        let dbActor = actorSystem.ActorOf(Props.Create<TweetsStorageActor>(session))
-        let tweets: Tweets = { value = [ { Tweet.Zero() with Key = "test2" ; Sentiment = Emotion.Positive } ] }
-        dbActor.Tell(Store(tweets))
-        // try
-        //     WebServer.start (getPortsOrDefault 8080us)
-        //     0 // return an integer exit code
-        // with
-        // | ex ->
-        //     let color = System.Console.ForegroundColor
-        //     System.Console.ForegroundColor <- System.ConsoleColor.Red
-        //     System.Console.WriteLine(ex.Message)
-        //     System.Console.ForegroundColor <- color
-        //     1
-        let tweets = dbActor.Ask<Tweets option>(GetByKey("test2")) |> Async.AwaitTask |> Async.RunSynchronously
-        let keys = dbActor.Ask<string list option>(GetSearchKeys) |> Async.AwaitTask |> Async.RunSynchronously
-
-        printfn "%A-%A" tweets keys
-        0
+        //let cluster = Cassandra.cluster(appconfig)
+        //let session = cluster |> Cassandra.session appconfig
+        try
+            WebServer.start appconfig actorSystem
+            0 // return an integer exit code
+        with
+        | ex ->
+            let color = System.Console.ForegroundColor
+            System.Console.ForegroundColor <- System.ConsoleColor.Red
+            System.Console.WriteLine(ex.Message)
+            System.Console.ForegroundColor <- color
+            1

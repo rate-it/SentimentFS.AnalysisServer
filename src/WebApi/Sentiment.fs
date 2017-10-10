@@ -1,6 +1,6 @@
 namespace SentimentFS.AnalysisServer.WebApi
 
-module Sentiment =
+module SentimentApi =
     open Akka.Actor
     open Suave
     open Suave.Filters
@@ -16,7 +16,10 @@ module Sentiment =
     open SentimentFS.AnalysisServer.WebApi.Config
     open SentimentFS.NaiveBayes.Dto
 
-    let intToEmotion (value: int): Emotion =
+    [<CLIMutable>]
+    type TrainingQueryDto<'a when 'a : comparison> = { value: string; category: 'a; weight : int }
+
+    let private intToEmotion (value: int): Emotion =
         match value with
         | -5 | -4 -> Emotion.VeryNegative
         | -3 | -2 | -1 -> Emotion.Negative
@@ -25,8 +28,8 @@ module Sentiment =
         | 4 | 5 -> Emotion.VeryPositive
         | _ -> Emotion.Neutral
 
-    let createSentimentActor (trainDataUrl: string) (system: ActorSystem) =
-        let sentimentActor = system.ActorOf(Props.Create<SentimentActor>(), Actors.sentimentActor.Name)
+    let private createSentimentActor (trainDataUrl: string) (system: ActorSystem) =
+        let sentimentActor = system.ActorOf(Props.Create<SentimentActor>(Some defaultClassificatorConfig), Actors.sentimentActor.Name)
         let httpResult = async {
             use client = new HttpClient()
             let! result = client.GetAsync(System.Uri(trainDataUrl)) |> Async.AwaitTask
@@ -44,13 +47,20 @@ module Sentiment =
 
     let sentimentController (trainDataUrl: string) (system: ActorSystem) =
         let sentimentActor = createSentimentActor trainDataUrl system
-        let classify(text):WebPart =
+        let classify(query: ClassifyMessage):WebPart =
             fun (x : HttpContext) ->
                 async {
-                    let! result = sentimentActor.Ask<ClassificationScore<Emotion>>({ text = text }) |> Async.AwaitTask
-                    return! OK (result |> JSON.toJson) x
+                    let! result = sentimentActor.Ask<ClassificationScore<Emotion>>(query) |> Async.AwaitTask
+                    return! (SuaveJson.toJson result) x
+                }
+        let train (query: TrainingQueryDto<Emotion>): WebPart =
+            fun (x: HttpContext) ->
+                async {
+                    sentimentActor.Tell({ trainQuery =  { value = query.value; category = query.category; weight = match query.weight with weight when weight > 1 -> Some weight | _ -> None } })
+                    return! OK "" x
                 }
 
         pathStarts "/api/sentiment" >=> choose [
-            GET >=> choose [ pathScan "/api/sentiment/classification/%s" classify ]
+            POST >=> choose [ path "/api/sentiment/classification" >=> request (SuaveJson.getResourceFromReq >> classify) ]
+            PUT >=> choose [ path "/api/sentiment/trainer" >=> request (SuaveJson.getResourceFromReq >> train)]
         ]

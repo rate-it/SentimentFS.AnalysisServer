@@ -9,8 +9,8 @@ type CassandraConfig = { KeyspaceName: string; EndPoints: string[]; IsAuthentica
 type Sentiment = { InitFileUrl: string}
 
 [<CLIMutable>]
-type AppConfig = { Cassandra: CassandraConfig; Sentiment: Sentiment; TwitterApiCredentials: TwitterCredentials; Port: string }
+type AppConfig = { Cassandra: CassandraConfig; Sentiment: Sentiment; TwitterApiCredentials: TwitterCredentials; Port: uint16 }
 with static member Zero() = { Cassandra = { KeyspaceName = ""; EndPoints = [||]; IsAuthenticated = false; Username = ""; Password = ""; Replications = Dictionary<string, string>() }
                               Sentiment = { InitFileUrl = "" }
                               TwitterApiCredentials = { ConsumerKey = ""; ConsumerSecret = ""; AccessToken = ""; AccessTokenSecret = "" }
-                              Port = "" }
+                              Port = 8080us }
