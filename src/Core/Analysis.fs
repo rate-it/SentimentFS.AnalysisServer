@@ -73,7 +73,7 @@ module Sentiment =
 module Localizations =
     let getFrom (tweets: Tweets) =
         tweets.value
-                |> List.filter(fun x -> Math.Abs(x.Longitude) > Double.Epsilon && Math.Abs(x.Latitude) > Double.Epsilon)
+                |> List.filter(fun x -> Math.Abs(x.Longitude) > Double.Epsilon || Math.Abs(x.Latitude) > Double.Epsilon)
                 |> List.map(fun x -> struct (x.Longitude, x.Latitude))
                 |> List.toSeq
 

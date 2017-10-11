@@ -35,4 +35,10 @@ module Analysis =
                     Expect.sequenceEqual subject [| struct ("trend", 2); struct ("infinite", 1) |] """should equal [| struct ("trend", 2); struct ("infinite", 1) |] with this order"""
                 }
             ]
+            testList "Localizations" [
+                test "getFrom" {
+                    let subject = { value = [ { Tweet.Zero() with Longitude = 0.0; Latitude = 0.0; }; {Tweet.Zero() with Longitude = 1.0; Latitude = 0.0; }; {Tweet.Zero() with Longitude = 1.0; Latitude = 1.0; }] } |> Localizations.getFrom
+                    Expect.sequenceEqual subject [| struct (1.0, 0.0); struct (1.0, 1.0) |] ""
+                }
+            ]
         ]
