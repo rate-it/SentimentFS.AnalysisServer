@@ -55,6 +55,10 @@ module Trend =
             else
                 if a > 0.0 then Trend.Increasing else Trend.Decreasing
 
+module Sentiment =
+
+    let groupTweetsBySentiment (tweets: Tweets): struct (Emotion * int) list =
+        tweets.value |> List.groupBy(fun x -> x.Sentiment) |> List.map(fun (emotion, tweets) -> struct (emotion, tweets |> List.length))
 
 
 type AnalysisActor() as this =
