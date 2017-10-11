@@ -15,15 +15,13 @@ module Analysis =
     open Newtonsoft.Json
     open SentimentFS.AnalysisServer.WebApi.Config
 
-    let analysisController(config: AppConfig)(system: ActorSystem) =
-        let analysisActor =
-            system.ActorOf(Props.Create<AnalysisActor>(), Actors.analysisActor.Name)
-
+    let analysisController(system: ActorSystem) =
         let getAnalysisResultByKey(key):WebPart =
             fun (x : HttpContext) ->
                 async {
-                    let! result = analysisActor.Ask<string>({ key = key }) |> Async.AwaitTask
-                    return! OK result x
+                    let analysisActor = system.ActorSelection(Actors.analysisActor.Path)
+                    let! result = analysisActor.Ask<AnalysisScore option>({ text = key }) |> Async.AwaitTask
+                    return! (SuaveJson.toJson result) x
                 }
 
         pathStarts "/api/analysis" >=> choose [

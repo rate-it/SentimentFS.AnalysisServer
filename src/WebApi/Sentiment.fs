@@ -46,16 +46,17 @@ module SentimentApi =
         sentimentActor
 
     let sentimentController (system: ActorSystem) =
-        let sentimentActor = system.ActorSelection(Actors.sentimentActor.Path)
         let classify(query: ClassifyMessage):WebPart =
             fun (x : HttpContext) ->
                 async {
+                    let sentimentActor = system.ActorSelection(Actors.sentimentActor.Path)
                     let! result = sentimentActor.Ask<ClassificationScore<Emotion>>(query) |> Async.AwaitTask
                     return! (SuaveJson.toJson result) x
                 }
         let train (query: TrainingQueryDto<Emotion>): WebPart =
             fun (x: HttpContext) ->
                 async {
+                    let sentimentActor = system.ActorSelection(Actors.sentimentActor.Path)
                     sentimentActor.Tell({ trainQuery =  { value = query.value; category = query.category; weight = match query.weight with weight when weight > 1 -> Some weight | _ -> None } })
                     return! OK "" x
                 }

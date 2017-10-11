@@ -13,12 +13,13 @@ module Tweets =
     open Suave.Successful
     open SentimentFS.AnalysisServer.Core.Tweets.Messages
 
-    let tweetsController (config: AppConfig) (system: ActorSystem) =
+    let tweetsController (system: ActorSystem) =
 
         let getTweetsBySearchKeys(query: string):WebPart =
             fun (x : HttpContext) ->
                 async {
-                    let! result = system.ActorSelection(Actors.tweetsMaster.Path).Ask<Tweets option>({ key = query }) |> Async.AwaitTask
+                    let tweetsMaster = system.ActorSelection(Actors.tweetsMaster.Path)
+                    let! result = tweetsMaster.Ask<Tweets option>({ key = query }) |> Async.AwaitTask
                     return! (SuaveJson.toJson result) x
                 }
 

@@ -18,9 +18,9 @@ module WebServer =
 
     let app (config: AppConfig) (system: ActorSystem)  =
         choose [
-            sentimentController config system
-            tweetsController config system
-            analysisController config system
+            sentimentController system
+            tweetsController system
+            analysisController system
         ]
 
     let start (config: AppConfig) (system: ActorSystem) =

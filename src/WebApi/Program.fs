@@ -22,6 +22,7 @@ module Program =
     open SentimentFS.AnalysisServer.Core.Tweets.TweetsStorage
     open SentimentFS.AnalysisServer.Core.Tweets.Messages
     open SentimentFS.AnalysisServer.Core.Tweets.TweetsMaster
+    open SentimentFS.AnalysisServer.Core.Analysis
 
     let GetEnvVar var =
         match System.Environment.GetEnvironmentVariable(var) with
@@ -38,8 +39,8 @@ module Program =
         let sentimentActor = SentimentApi.createSentimentActor appconfig.Sentiment.InitFileUrl actorSystem
         let session = Cassandra.cluster appconfig |> Cassandra.session appconfig
         let tweetsActor = actorSystem.ActorOf(Props.Create<TweetsMasterActor>(session, appconfig.TwitterApiCredentials), Actors.tweetsMaster.Name)
-        //let cluster = Cassandra.cluster(appconfig)
-        //let session = cluster |> Cassandra.session appconfig
+        let analysisActor = actorSystem.ActorOf(Props.Create<AnalysisActor>(), Actors.analysisActor.Name)
+
         try
             WebServer.start appconfig actorSystem
             0 // return an integer exit code
