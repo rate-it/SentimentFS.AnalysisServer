@@ -20,7 +20,7 @@ module Analysis =
                     Expect.equal subject Trend.Decreasing "Trend should be decreasing"
             ]
             testList "Sentiment" [
-                test "Emtotion with quqantity" {
+                test "groupTweetsBySentiment" {
                     let subject = { value = [ { Tweet.Zero() with Sentiment = Emotion.Negative }; { Tweet.Zero() with Sentiment = Emotion.Positive } ] } |> Sentiment.groupTweetsBySentiment
                     Expect.equal subject ([struct (Emotion.Negative, 1); struct (Emotion.Positive, 1)]) "should"
                 }
