@@ -25,4 +25,10 @@ module Analysis =
                     Expect.equal subject ([struct (Emotion.Negative, 1); struct (Emotion.Positive, 1)]) "should"
                 }
             ]
+            testList "KeyWords" [
+                test "getFrom" {
+                    let subject = [| "trend"; "trend"; "should"; "should"; "be" |] |> KeyWords.getFrom
+                    Expect.sequenceEqual subject [| struct ("trend", 2) |] """should equal [| struct ("trend", 2) |] because should is stopWord and be is to short"""
+                }
+            ]
         ]

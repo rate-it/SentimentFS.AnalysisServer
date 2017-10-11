@@ -4,6 +4,7 @@ open Akka.Actor
 open System
 open SentimentFS.AnalysisServer.Core.Sentiment
 open SentimentFS.AnalysisServer.Core.Tweets.Messages
+open SentimentFS.AnalysisServer.Core.Sentiment
 open System.Collections.Generic
 
 type Trend =
@@ -11,13 +12,13 @@ type Trend =
     | Stable = 0
     | Decreasing = -1
 
-type AnalysisScore = { SentimentByQuantity: IDictionary<Emotion, int>
+type AnalysisScore = { SentimentByQuantity: struct (Emotion * int) seq
                        KeyWords: struct (string * int) seq
                        Localizations: struct (float32 * float32) seq
                        Key: string
                        Trend: Trend
                        DateByQuantity: IDictionary<DateTime, int> }
-    with static member Zero key = { SentimentByQuantity = Dictionary<Emotion, int>()
+    with static member Zero key = { SentimentByQuantity = [||]
                                     KeyWords = [||]
                                     Localizations = [||]
                                     Key = key
@@ -55,11 +56,19 @@ module Trend =
             else
                 if a > 0.0 then Trend.Increasing else Trend.Decreasing
 
-module Sentiment =
 
+module KeyWords =
+    open SentimentFS.TextUtilities
+    let getFrom words =
+        words
+            |> Filter.filterOutSeq stopWords
+            |> Seq.filter(fun x -> x.Length > 3)
+            |> Seq.groupBy(id) |> Seq.map(fun (key, wordss) -> struct (key, wordss |> Seq.length))
+            |> Seq.sortByDescending(fun struct (_, q) -> q)
+
+module Sentiment =
     let groupTweetsBySentiment (tweets: Tweets): struct (Emotion * int) list =
         tweets.value |> List.groupBy(fun x -> x.Sentiment) |> List.map(fun (emotion, tweets) -> struct (emotion, tweets |> List.length))
-
 
 type AnalysisActor() as this =
     inherit ReceiveActor()
