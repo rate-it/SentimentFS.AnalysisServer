@@ -21,6 +21,7 @@ module Program =
     open Cassandra
     open SentimentFS.AnalysisServer.Core.Tweets.TweetsStorage
     open SentimentFS.AnalysisServer.Core.Tweets.Messages
+    open SentimentFS.AnalysisServer.Core.Tweets.TweetsMaster
 
     let GetEnvVar var =
         match System.Environment.GetEnvironmentVariable(var) with
@@ -34,6 +35,9 @@ module Program =
         let appconfig = AppConfig.Zero()
         configurationRoot.Bind(appconfig) |> ignore
         let actorSystem = ActorSystem.Create("sentimentfs", akkaConfig)
+        let sentimentActor = SentimentApi.createSentimentActor appconfig.Sentiment.InitFileUrl actorSystem
+        let session = Cassandra.cluster appconfig |> Cassandra.session appconfig
+        let tweetsActor = actorSystem.ActorOf(Props.Create<TweetsMasterActor>(session, appconfig.TwitterApiCredentials), Actors.tweetsMaster.Name)
         //let cluster = Cassandra.cluster(appconfig)
         //let session = cluster |> Cassandra.session appconfig
         try

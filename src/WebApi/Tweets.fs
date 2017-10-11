@@ -14,13 +14,11 @@ module Tweets =
     open SentimentFS.AnalysisServer.Core.Tweets.Messages
 
     let tweetsController (config: AppConfig) (system: ActorSystem) =
-        let session = Cassandra.cluster config |> Cassandra.session config
-        let tweetsActor = system.ActorOf(Props.Create<TweetsMasterActor>(session, config.TwitterApiCredentials), Actors.tweetsMaster.Name)
 
         let getTweetsBySearchKeys(query: string):WebPart =
             fun (x : HttpContext) ->
                 async {
-                    let! result = tweetsActor.Ask<Tweets option>({ key = query }) |> Async.AwaitTask
+                    let! result = system.ActorSelection(Actors.tweetsMaster.Path).Ask<Tweets option>({ key = query }) |> Async.AwaitTask
                     return! (SuaveJson.toJson result) x
                 }
 

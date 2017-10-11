@@ -6,7 +6,7 @@ open SentimentFS.AnalysisServer.Core.Tweets.TwitterApiClient
 type CassandraConfig = { KeyspaceName: string; EndPoints: string[]; IsAuthenticated: bool; Username: string; Password: string; Replications: Dictionary<string, string> }
 
 [<CLIMutable>]
-type Sentiment = { InitFileUrl: string}
+type Sentiment = { InitFileUrl: string }
 
 [<CLIMutable>]
 type AppConfig = { Cassandra: CassandraConfig; Sentiment: Sentiment; TwitterApiCredentials: TwitterCredentials; Port: uint16 }

@@ -2,9 +2,10 @@ namespace SentimentFS.AnalysisServer.Core.Analysis
 
 open Akka.Actor
 open System
+open SentimentFS.AnalysisServer.Core.Actor
 open SentimentFS.AnalysisServer.Core.Sentiment
 open SentimentFS.AnalysisServer.Core.Tweets.Messages
-open SentimentFS.AnalysisServer.Core.Sentiment
+open SentimentFS.AnalysisServer.Core
 open System.Collections.Generic
 
 type Trend =
@@ -79,11 +80,15 @@ module Localizations =
 
 type AnalysisActor() as this =
     inherit ReceiveActor()
-    do this.Receive<GetAnalysisForKey>(this.HandleAsync)
+    do this.ReceiveAsync<GetAnalysisForKey>(fun x -> this.HandleAsync(x))
 
     member private this.AnalyzeTweets(tweets: Tweets) : AnalysisScore = AnalysisScore.Zero("")
 
     member this.HandleAsync(msg: GetAnalysisForKey) =
-        let tweets: Tweets = { value = [ Tweet.Zero() ] }
-        this.Sender.Tell(sprintf "Pozdro: %s" msg.key)
-        true
+        let sender = this.Sender
+        let self = this.Self
+        let tweetMaster = Akka.Actor.Internal.InternalCurrentActorCellKeeper.Current.ActorSelection(Actors.tweetsMaster.Path)
+        async {
+            let tweets: Tweets = { value = [ Tweet.Zero() ] }
+            sender.Tell(sprintf "Pozdro: %s" msg.key)
+        } |> Async.StartAsTask :> System.Threading.Tasks.Task

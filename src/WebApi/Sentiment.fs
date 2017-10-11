@@ -28,7 +28,7 @@ module SentimentApi =
         | 4 | 5 -> Emotion.VeryPositive
         | _ -> Emotion.Neutral
 
-    let private createSentimentActor (trainDataUrl: string) (system: ActorSystem) =
+    let createSentimentActor (trainDataUrl: string) (system: ActorSystem) =
         let sentimentActor = system.ActorOf(Props.Create<SentimentActor>(Some defaultClassificatorConfig), Actors.sentimentActor.Name)
         let httpResult = async {
             use client = new HttpClient()
@@ -45,8 +45,8 @@ module SentimentApi =
             sentimentActor.Tell({ trainQuery =  { value = word; category = emotion; weight = None } })
         sentimentActor
 
-    let sentimentController (config: AppConfig) (system: ActorSystem) =
-        let sentimentActor = createSentimentActor config.Sentiment.InitFileUrl system
+    let sentimentController (system: ActorSystem) =
+        let sentimentActor = system.ActorSelection(Actors.sentimentActor.Path)
         let classify(query: ClassifyMessage):WebPart =
             fun (x : HttpContext) ->
                 async {
