@@ -14,7 +14,7 @@ type Trend =
 
 type AnalysisScore = { SentimentByQuantity: struct (Emotion * int) seq
                        KeyWords: struct (string * int) seq
-                       Localizations: struct (float32 * float32) seq
+                       Localizations: struct (double * double) seq
                        Key: string
                        Trend: Trend
                        DateByQuantity: IDictionary<DateTime, int> }
@@ -69,6 +69,13 @@ module KeyWords =
 module Sentiment =
     let groupTweetsBySentiment (tweets: Tweets): struct (Emotion * int) list =
         tweets.value |> List.groupBy(fun x -> x.Sentiment) |> List.map(fun (emotion, tweets) -> struct (emotion, tweets |> List.length))
+
+module Localizations =
+    let getFrom (tweets: Tweets) =
+        tweets.value
+                |> List.filter(fun x -> Math.Abs(x.Longitude) > Double.Epsilon && Math.Abs(x.Latitude) > Double.Epsilon)
+                |> List.map(fun x -> struct (x.Longitude, x.Latitude))
+                |> List.toSeq
 
 type AnalysisActor() as this =
     inherit ReceiveActor()
