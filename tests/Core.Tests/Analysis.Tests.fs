@@ -30,5 +30,9 @@ module Analysis =
                     let subject = [| "trend"; "trend"; "should"; "should"; "be" |] |> KeyWords.getFrom
                     Expect.sequenceEqual subject [| struct ("trend", 2) |] """should equal [| struct ("trend", 2) |] because should is stopWord and be is to short"""
                 }
+                test "getFrom" {
+                    let subject = [| "trend"; "trend"; "infinite" |] |> KeyWords.getFrom
+                    Expect.sequenceEqual subject [| struct ("trend", 2); struct ("infinite", 1) |] """should equal [| struct ("trend", 2); struct ("infinite", 1) |] with this order"""
+                }
             ]
         ]
