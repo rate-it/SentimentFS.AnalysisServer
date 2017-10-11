@@ -35,7 +35,7 @@ module Trend =
 
     let private a(nums: float list) =
         let y = nums
-        let t = [0.0..(y |> List.length |> double)]
+        let t = [0.0..(y |> List.length |> double) - 1.0]
         let averageT = t |> average
         let averageY = y |> average
         let tmta = t |> List.map(fun x -> x - averageT)
