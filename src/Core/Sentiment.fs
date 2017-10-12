@@ -8,6 +8,9 @@ module Sentiment =
     open SentimentFS.Stemmer.Stemmer
     open SentimentFS.TextUtilities
     open Akka.Actor
+    open System.Net.Http
+    open Newtonsoft.Json
+    open SentimentFS.AnalysisServer.Core.Actor
 
     type Emotion =
         | VeryNegative = -2
@@ -24,6 +27,8 @@ module Sentiment =
     type ClassifyMessage = { text : string }
     type TrainMessage = { trainQuery : TrainingQuery<Emotion> }
 
+    [<CLIMutable>]
+    type TrainingQueryDto<'a when 'a : comparison> = { value: string; category: 'a; weight : int }
 
     let stopWords = """a about above after again against all am an and any are aren't as at be
       because been before being below between both but by can't cannot could
@@ -74,3 +79,27 @@ module Sentiment =
                 sender.Tell(result)
                 return 0
             } |> Async.StartAsTask :> System.Threading.Tasks.Task
+
+    let private intToEmotion (value: int): Emotion =
+        match value with
+        | -5 | -4 -> Emotion.VeryNegative
+        | -3 | -2 | -1 -> Emotion.Negative
+        | 0 -> Emotion.Neutral
+        | 1 | 2 | 3 -> Emotion.Positive
+        | 4 | 5 -> Emotion.VeryPositive
+        | _ -> Emotion.Neutral
+
+    let initSentimentActor (trainDataUrl: string) (sentimentActor: IActorRef) =
+        let httpResult = async {
+            use client = new HttpClient()
+            let! result = client.GetAsync(System.Uri(trainDataUrl)) |> Async.AwaitTask
+            result.EnsureSuccessStatusCode() |> ignore
+            return! result.Content.ReadAsStringAsync() |> Async.AwaitTask } |> Async.RunSynchronously
+
+        let emotions = httpResult
+                            |> JsonConvert.DeserializeObject<Map<string, int>>
+                            |> Map.toList
+                            |> List.map(fun (word, em) -> struct (word, em |> intToEmotion))
+
+        for struct (word, emotion) in emotions do
+            sentimentActor.Tell({ trainQuery =  { value = word; category = emotion; weight = None } })
