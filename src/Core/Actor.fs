@@ -11,6 +11,7 @@ module ActorType =
 
 module Actors =
     open ActorType
+    let apiActor = create("api", None)
     let analysisActor = create("analysis", None)
     let sentimentActor = create("sentiment", None)
     let tweetsMaster = create("tweets", None)

@@ -7,6 +7,7 @@
     <Compile Include="Sentiment.fs" />
     <Compile Include="Tweets.fs" />
     <Compile Include="Analysis.fs" />
+    <Compile Include="Api.fs" />
   </ItemGroup>
   <Import Project="..\..\.paket\Paket.Restore.targets" />
 </Project>

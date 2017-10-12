@@ -6,6 +6,24 @@
             },
             "serialization-bindings": {
                 "System.Object": "hyperion"
+            },
+            "deployment": {
+                "/analysis": {
+                    "router": "round-robin-pool",
+                    "resizer": {
+                        "enabled": "on",
+                        "lower-bound": 5,
+                        "upper-bound": 30
+                    }
+                },
+                "/tweets": {
+                    "router": "round-robin-pool",
+                    "resizer": {
+                        "enabled": "on",
+                        "lower-bound": 5,
+                        "upper-bound": 30
+                    }
+                }
             }
         }
     }
