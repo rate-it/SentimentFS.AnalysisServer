@@ -1,7 +1,7 @@
 namespace SentimentFS.AnalysisServer.WebApi
 
 module Tweets =
-    open SentimentFS.AnalysisServer.WebApi.Config
+    open SentimentFS.AnalysisServer.Core.Config
     open Akka.Actor
     open SentimentFS.AnalysisServer.Core.Actor
     open SentimentFS.AnalysisServer.WebApi.Storage

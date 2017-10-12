@@ -13,7 +13,7 @@ module SentimentApi =
     open Tweetinvi
     open System.Net.Http
     open Newtonsoft.Json
-    open SentimentFS.AnalysisServer.WebApi.Config
+    open SentimentFS.AnalysisServer.Core.Config
     open SentimentFS.NaiveBayes.Dto
 
     [<CLIMutable>]

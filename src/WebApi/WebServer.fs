@@ -13,7 +13,7 @@ module WebServer =
     open Suave.Operators
     open Suave.RequestErrors
     open Suave.Successful
-    open SentimentFS.AnalysisServer.WebApi.Config
+    open SentimentFS.AnalysisServer.Core.Config
     open Akka.Actor
 
     let app (config: AppConfig) (system: ActorSystem)  =

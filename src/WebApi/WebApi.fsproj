@@ -10,7 +10,6 @@
         </Content>
     </ItemGroup>
     <ItemGroup>
-        <Compile Include="Config.fs" />
         <Compile Include="Json.fs" />
         <Compile Include="Storage.fs" />
         <Compile Include="Sentiment.fs" />

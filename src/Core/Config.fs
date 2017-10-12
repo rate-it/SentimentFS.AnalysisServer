@@ -1,4 +1,4 @@
-namespace SentimentFS.AnalysisServer.WebApi.Config
+namespace SentimentFS.AnalysisServer.Core.Config
 open System.Collections.Generic
 open SentimentFS.AnalysisServer.Core.Tweets.TwitterApiClient
 

@@ -13,7 +13,7 @@ module Analysis =
     open Tweetinvi
     open System.Net.Http
     open Newtonsoft.Json
-    open SentimentFS.AnalysisServer.WebApi.Config
+    open SentimentFS.AnalysisServer.Core.Config
 
     let analysisController(system: ActorSystem) =
         let getAnalysisResultByKey(key):WebPart =

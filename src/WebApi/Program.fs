@@ -17,7 +17,7 @@ module Program =
     open SentimentFS.NaiveBayes.Dto
     open System.IO
     open SentimentFS.AnalysisServer.Core.Tweets.Messages
-    open SentimentFS.AnalysisServer.WebApi.Config
+    open SentimentFS.AnalysisServer.Core.Config
     open Cassandra
     open SentimentFS.AnalysisServer.Core.Tweets.TweetsStorage
     open SentimentFS.AnalysisServer.Core.Tweets.Messages
