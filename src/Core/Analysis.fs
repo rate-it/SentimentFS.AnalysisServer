@@ -27,7 +27,7 @@ type AnalysisScore = { SentimentByQuantity: struct (Emotion * int) seq
                                     Trend = Trend.Stable
                                     DateByQuantity = Dictionary<DateTime, int>() }
 
-type GetAnalysisForKey = { text : string }
+type GetAnalysisForKey = { searchKey : string }
 
 module Trend =
 
@@ -89,13 +89,13 @@ type AnalysisActor() as this =
         let self = this.Self
         let tweetMaster = Akka.Actor.Internal.InternalCurrentActorCellKeeper.Current.ActorSelection(Actors.tweetsMaster.Path)
         async {
-            let! tweetsOpt = tweetMaster.Ask<Tweets option>({ key = msg.text }) |> Async.AwaitTask
+            let! tweetsOpt = tweetMaster.Ask<Tweets option>({ key = msg.searchKey }) |> Async.AwaitTask
             match tweetsOpt with
             | Some tweets ->
                 let result = { SentimentByQuantity = Sentiment.groupTweetsBySentiment tweets
                                KeyWords = KeyWords.getFrom (tweets.value |> List.collect(fun x -> x.Text |> Tokenizer.tokenize))
                                Localizations = Localizations.getFrom tweets
-                               Key = msg.text
+                               Key = msg.searchKey
                                Trend = Trend.rate (tweets.value |> List.map(fun x -> x.Sentiment |> int))
                                DateByQuantity = Dictionary<DateTime, int>() }
                 sender.Tell(Some result)
