@@ -15,6 +15,7 @@ type ApiActor(config: AppConfig, session: ISession) as this =
         this.Receive<TrainMessage>(this.HandleTrainQuery)
         this.Receive<ClassifyMessage>(this.HandleClassifyQuery)
         this.Receive<GetTweetsByKey>(this.HandleGetTweetsByKey)
+        this.Receive<GetAnalysisForKey>(this.HandleGetAnalysisForKey)
 
     let mutable sentimentActor: IActorRef = null
     let mutable tweetsMasterActor: IActorRef = null

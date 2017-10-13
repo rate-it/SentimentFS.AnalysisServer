@@ -19,3 +19,7 @@ GET /api/tweets/fsharp HTTP/1.1
 Host: localhost:8080
 Content-Type: application/json
 Cache-Control: no-cache
+
+GET /api/analysis/result/fsharp HTTP/1.1
+Host: localhost:8080
+Cache-Control: no-cache
