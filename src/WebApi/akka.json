@@ -8,7 +8,7 @@
                 "System.Object": "hyperion"
             },
             "deployment": {
-                "/analysis": {
+                "/api/analysis": {
                     "router": "round-robin-pool",
                     "resizer": {
                         "enabled": "on",

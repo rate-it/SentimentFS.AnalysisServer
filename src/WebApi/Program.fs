@@ -39,7 +39,6 @@ module Program =
         let actorSystem = ActorSystem.Create("sentimentfs", akkaConfig)
         let session = Cassandra.cluster appconfig |> Cassandra.session appconfig
         let apiActor = actorSystem.ActorOf(Props.Create<ApiActor>(appconfig, session), Actors.apiActor.Name)
-        let analysisActor = actorSystem.ActorOf(Props.Create<AnalysisActor>(), Actors.analysisActor.Name)
 
         try
             WebServer.start appconfig actorSystem

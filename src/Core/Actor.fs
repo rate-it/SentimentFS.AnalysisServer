@@ -12,7 +12,7 @@ module ActorType =
 module Actors =
     open ActorType
     let apiActor = create("api", None)
-    let analysisActor = create("analysis", None)
+    let analysisActor = create("analysis", Some apiActor)
     let sentimentActor = create("sentiment", Some apiActor)
     let tweetsMaster = create("tweets", Some apiActor)
     let twitterApiActor = create("twitter-api", Some tweetsMaster)

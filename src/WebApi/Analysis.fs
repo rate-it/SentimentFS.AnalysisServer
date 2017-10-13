@@ -19,9 +19,9 @@ module Analysis =
         let getAnalysisResultByKey(key):WebPart =
             fun (x : HttpContext) ->
                 async {
-                    let analysisActor = system.ActorSelection(Actors.analysisActor.Path)
+                    let api = system.ActorSelection(Actors.apiActor.Path)
                     let a = { text = key }
-                    let! result = analysisActor.Ask<AnalysisScore option>({ searchKey = key }) |> Async.AwaitTask
+                    let! result = api.Ask<AnalysisScore option>({ searchKey = key }) |> Async.AwaitTask
                     return! (SuaveJson.toJson result) x
                 }
 
