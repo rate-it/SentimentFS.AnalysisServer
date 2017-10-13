@@ -18,7 +18,7 @@ module Tweets =
         let getTweetsBySearchKeys(query: string):WebPart =
             fun (x : HttpContext) ->
                 async {
-                    let tweetsMaster = system.ActorSelection(Actors.tweetsMaster.Path)
+                    let tweetsMaster = system.ActorSelection(Actors.apiActor.Path)
                     let! result = tweetsMaster.Ask<Tweets option>({ key = query }) |> Async.AwaitTask
                     return! (SuaveJson.toJson result) x
                 }

@@ -37,9 +37,8 @@ module Program =
         let appconfig = AppConfig.Zero()
         configurationRoot.Bind(appconfig) |> ignore
         let actorSystem = ActorSystem.Create("sentimentfs", akkaConfig)
-        let apiActor = actorSystem.ActorOf(Props.Create<ApiActor>(appconfig), Actors.apiActor.Name)
         let session = Cassandra.cluster appconfig |> Cassandra.session appconfig
-        let tweetsActor = actorSystem.ActorOf(Props.Create<TweetsMasterActor>(session, appconfig.TwitterApiCredentials), Actors.tweetsMaster.Name)
+        let apiActor = actorSystem.ActorOf(Props.Create<ApiActor>(appconfig, session), Actors.apiActor.Name)
         let analysisActor = actorSystem.ActorOf(Props.Create<AnalysisActor>(), Actors.analysisActor.Name)
 
         try

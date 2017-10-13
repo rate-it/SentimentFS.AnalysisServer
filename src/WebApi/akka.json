@@ -16,7 +16,7 @@
                         "upper-bound": 30
                     }
                 },
-                "/tweets": {
+                "/api/tweets": {
                     "router": "round-robin-pool",
                     "resizer": {
                         "enabled": "on",

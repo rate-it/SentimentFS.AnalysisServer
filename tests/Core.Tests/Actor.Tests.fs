@@ -18,19 +18,19 @@ module Actor =
                     let subject = Actors.tweetsMaster
                     Expect.equal subject.Name "tweets" "name should equal tweets"
                     Expect.isNone subject.Parent "Parent should be None"
-                    Expect.equal subject.Path "/user/tweets" "path should equal /user/tweets"
+                    Expect.equal subject.Path "/user/api/tweets" "path should equal /user/tweets"
                 }
                 test "TweetsDbActor" {
                     let subject = Actors.tweetStorageActor
                     Expect.equal subject.Name "storage" "name should equal storage"
                     Expect.isSome subject.Parent "Parent should be Some"
-                    Expect.equal subject.Path "/user/tweets/storage" "path should equal /user/tweets/storage"
+                    Expect.equal subject.Path "/user/api/tweets/storage" "path should equal /user/tweets/storage"
                 }
                 test "TwitterApiActor" {
                     let subject = Actors.twitterApiActor
                     Expect.equal subject.Name "twitter-api" "name should equal twitter-api"
                     Expect.isSome subject.Parent "Parent should be Some"
-                    Expect.equal subject.Path "/user/tweets/twitter-api" "path should equal /user/tweets/twitter-api"
+                    Expect.equal subject.Path "/user/api/tweets/twitter-api" "path should equal /user/tweets/twitter-api"
                 }
             ]
         ]
