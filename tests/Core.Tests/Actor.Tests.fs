@@ -11,13 +11,13 @@ module Actor =
                 test "AnalysisActor" {
                     let subject = Actors.analysisActor
                     Expect.equal subject.Name "analysis" "name should equal tweets"
-                    Expect.isNone subject.Parent "Parent should be None"
+                    Expect.isSome subject.Parent "Parent should be Some"
                     Expect.equal subject.Path "/user/api/analysis" "path should equal /user/api/analysis"
                 }
                 test "TweetsMaster" {
                     let subject = Actors.tweetsMaster
                     Expect.equal subject.Name "tweets" "name should equal tweets"
-                    Expect.isNone subject.Parent "Parent should be None"
+                    Expect.isSome subject.Parent "Parent should be Some"
                     Expect.equal subject.Path "/user/api/tweets" "path should equal /user/api/tweets"
                 }
                 test "TweetsDbActor" {

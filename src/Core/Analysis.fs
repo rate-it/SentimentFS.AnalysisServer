@@ -5,9 +5,9 @@ open System
 open SentimentFS.AnalysisServer.Core.Actor
 open SentimentFS.AnalysisServer.Core.Sentiment
 open SentimentFS.AnalysisServer.Core.Tweets.Messages
-open SentimentFS.AnalysisServer.Core
 open System.Collections.Generic
 open SentimentFS.TextUtilities
+open SentimentFS.Common.Seq
 
 type Trend =
     | Increasing = 1
@@ -30,7 +30,6 @@ type AnalysisScore = { SentimentByQuantity: struct (Emotion * int) seq
 type GetAnalysisForKey = { searchKey : string }
 
 module Trend =
-
     let private average(nums: float list) =
         let length = nums |> List.length |> double
         let sum = nums |> List.sum |> double
@@ -62,7 +61,7 @@ module Trend =
 module KeyWords =
     let getFrom words =
         words
-            |> Filter.filterOutSeq stopWords
+            |> filterOut stopWords
             |> Seq.filter(fun x -> x.Length > 3)
             |> Seq.groupBy(id) |> Seq.map(fun (key, wordss) -> struct (key, wordss |> Seq.length))
             |> Seq.sortByDescending(fun struct (_, q) -> q)
@@ -84,7 +83,6 @@ type AnalysisActor() as this =
 
     member this.HandleAsync(msg: GetAnalysisForKey) =
         let sender = this.Sender
-        let self = this.Self
         let tweetMaster = Akka.Actor.Internal.InternalCurrentActorCellKeeper.Current.ActorSelection(Actors.tweetsMaster.Path)
         async {
             let! tweetsOpt = tweetMaster.Ask<Tweets option>({ key = msg.searchKey }) |> Async.AwaitTask
@@ -98,4 +96,4 @@ type AnalysisActor() as this =
                                DateByQuantity = Dictionary<DateTime, int>() }
                 sender.Tell(Some result)
             | None -> sender.Tell(None)
-        } |> Async.StartAsTask :> System.Threading.Tasks.Task
+        } |> Async.StartAsTask :> Threading.Tasks.Task

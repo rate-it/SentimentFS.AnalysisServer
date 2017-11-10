@@ -1,8 +1,8 @@
 namespace SentimentFS.AnalysisServer.Core.Actor
 
-type ActorType = { Name: string; Parent: ActorType option; Path: string }
+type ActorMetaData  = { Name: string; Parent: ActorMetaData option; Path: string }
 
-module ActorType =
+module ActorMetaData  =
     let create(name, parent) =
         let parentPath = match parent with
                          | Some p -> p.Path
@@ -10,7 +10,7 @@ module ActorType =
         { Name = name; Parent = parent; Path = (sprintf "%s/%s" parentPath name) }
 
 module Actors =
-    open ActorType
+    open ActorMetaData
     let apiActor = create("api", None)
     let analysisActor = create("analysis", Some apiActor)
     let sentimentActor = create("sentiment", Some apiActor)
