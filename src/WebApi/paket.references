@@ -9,3 +9,4 @@ Microsoft.Extensions.Configuration.Json
 Microsoft.Extensions.Configuration.EnvironmentVariables
 Microsoft.Extensions.Configuration.CommandLine
 Microsoft.Extensions.Configuration.Binder
+Fable.JsonConverter

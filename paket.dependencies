@@ -21,6 +21,7 @@ nuget Microsoft.Extensions.Configuration.Json
 nuget Microsoft.Extensions.Configuration.EnvironmentVariables
 nuget Microsoft.Extensions.Configuration.CommandLine
 nuget Microsoft.Extensions.Configuration.Binder
+nuget Fable.JsonConverter
 nuget Expecto
 nuget YoloDev.Expecto.TestSdk
 clitool Microsoft.DotNet.Watcher.Tools
