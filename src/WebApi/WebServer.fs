@@ -15,9 +15,11 @@ module WebServer =
     open Suave.Successful
     open SentimentFS.AnalysisServer.Core.Config
     open Akka.Actor
+    open Suave.CORS
 
     let app (config: AppConfig) (system: ActorSystem)  =
         choose [
+            OPTIONS >=> cors defaultCORSConfig
             sentimentController system
             tweetsController system
             analysisController system
