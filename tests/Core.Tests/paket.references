@@ -1,4 +1,6 @@
 FSharp.Core
 SentimentFS.NaiveBayes
 Expecto
+YoloDev.Expecto.TestSdk
+Microsoft.NET.Test.Sdk
 Microsoft.DotNet.Watcher.Tools
