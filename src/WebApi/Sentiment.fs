@@ -6,7 +6,6 @@ module SentimentApi =
     open Suave.Filters
     open Suave.Operators
     open Suave.Successful
-    open SentimentFS.AnalysisServer.Core.Analysis
     open SentimentFS.AnalysisServer.Core.Sentiment
     open SentimentFS.AnalysisServer.Core.Actor
     open Cassandra
