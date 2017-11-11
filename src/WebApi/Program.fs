@@ -1,29 +1,15 @@
 ﻿namespace SentimentFS.AnalysisServer.WebApi
 
-open System
-open Suave
 open Akka.Actor
 open Akka.Configuration
-open Microsoft.Extensions.Configuration
-open Microsoft.Extensions.Configuration
-open SentimentFS.AnalysisServer
-open SentimentFS.AnalysisServer.WebApi.Analysis
 open SentimentFS.AnalysisServer.WebApi.Storage
-open SentimentFS.AnalysisServer.Core.Sentiment
 open SentimentFS.AnalysisServer.Core.Actor
-open SentimentFS.AnalysisServer.Core.Tweets.TwitterApiClient
 
 module Program =
-    open SentimentFS.NaiveBayes.Dto
     open System.IO
-    open SentimentFS.AnalysisServer.Core.Tweets.Messages
     open SentimentFS.AnalysisServer.Core.Config
-    open Cassandra
-    open SentimentFS.AnalysisServer.Core.Tweets.TweetsStorage
-    open SentimentFS.AnalysisServer.Core.Tweets.Messages
-    open SentimentFS.AnalysisServer.Core.Tweets.TweetsMaster
-    open SentimentFS.AnalysisServer.Core.Analysis
     open SentimentFS.AnalysisServer.Core.Api
+    open Microsoft.Extensions.Configuration
 
     let GetEnvVar var =
         match System.Environment.GetEnvironmentVariable(var) with
