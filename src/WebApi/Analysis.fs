@@ -20,7 +20,6 @@ module Analysis =
             fun (x : HttpContext) ->
                 async {
                     let api = system.ActorSelection(Actors.apiActor.Path)
-                    let a = { text = key }
                     let! result = api.Ask<AnalysisScore option>({ searchKey = key }) |> Async.AwaitTask
                     return! (SuaveJson.toJson result) x
                 }

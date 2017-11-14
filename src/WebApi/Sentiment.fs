@@ -6,24 +6,21 @@ module SentimentApi =
     open Suave.Filters
     open Suave.Operators
     open Suave.Successful
-    open SentimentFS.AnalysisServer.Core.Sentiment
     open SentimentFS.AnalysisServer.Core.Actor
-    open Cassandra
-    open Tweetinvi
-    open System.Net.Http
-    open Newtonsoft.Json
     open SentimentFS.AnalysisServer.Core.Config
     open SentimentFS.NaiveBayes.Dto
+    open SentimentFS.AnalysisServer.Core.Sentiment.Messages
+    open SentimentFS.AnalysisServer.Core.Sentiment.Dto
 
     let sentimentController (system: ActorSystem) =
-        let classify(query: ClassifyMessage):WebPart =
+        let classify(query: Classify):WebPart =
             fun (x : HttpContext) ->
                 async {
                     let api = system.ActorSelection(Actors.apiActor.Path)
                     let! result = api.Ask<ClassificationScore<Emotion>>(query) |> Async.AwaitTask
                     return! (SuaveJson.toJson result) x
                 }
-        let train (query: TrainingQueryDto<Emotion>): WebPart =
+        let train (query: TrainingQuery<Emotion>): WebPart =
             fun (x: HttpContext) ->
                 async {
                     let api = system.ActorSelection(Actors.apiActor.Path)

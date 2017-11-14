@@ -3,7 +3,8 @@ namespace SentimentFS.AnalysisServer.Core.Analysis
 open Akka.Actor
 open System
 open SentimentFS.AnalysisServer.Core.Actor
-open SentimentFS.AnalysisServer.Core.Sentiment
+open SentimentFS.AnalysisServer.Core.Sentiment.Messages
+open SentimentFS.AnalysisServer.Core.Sentiment.Actor
 open SentimentFS.AnalysisServer.Core.Tweets.Messages
 open System.Collections.Generic
 open SentimentFS.TextUtilities

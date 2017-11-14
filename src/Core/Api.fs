@@ -8,12 +8,15 @@ open Cassandra
 open SentimentFS.AnalysisServer.Core.Tweets.TweetsMaster
 open SentimentFS.AnalysisServer.Core.Tweets.Messages
 open SentimentFS.AnalysisServer.Core.Analysis
+open SentimentFS.AnalysisServer.Core.Sentiment.Messages
+open SentimentFS.AnalysisServer.Core.Sentiment.Actor
+open SentimentFS.AnalysisServer.Core.Sentiment.Init
 
 type ApiActor(config: AppConfig, session: ISession) as this =
     inherit ReceiveActor()
     do
-        this.Receive<TrainMessage>(this.HandleTrainQuery)
-        this.Receive<ClassifyMessage>(this.HandleClassifyQuery)
+        this.Receive<Train>(this.HandleTrainQuery)
+        this.Receive<Classify>(this.HandleClassifyQuery)
         this.Receive<GetTweetsByKey>(this.HandleGetTweetsByKey)
         this.Receive<GetAnalysisForKey>(this.HandleGetAnalysisForKey)
 
@@ -28,11 +31,11 @@ type ApiActor(config: AppConfig, session: ISession) as this =
             analysisActor <- Akka.Actor.Internal.InternalCurrentActorCellKeeper.Current.ActorOf(Props.Create<AnalysisActor>().WithRouter(FromConfig.Instance), Actors.analysisActor.Name)
             base.PreStart()
 
-    member this.HandleTrainQuery(msg: TrainMessage) =
+    member this.HandleTrainQuery(msg: Train) =
         sentimentActor.Forward(msg)
         true
 
-    member this.HandleClassifyQuery(msg: ClassifyMessage) =
+    member this.HandleClassifyQuery(msg: Classify) =
         sentimentActor.Forward(msg)
         true
 

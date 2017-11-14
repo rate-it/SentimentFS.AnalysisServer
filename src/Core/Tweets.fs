@@ -2,9 +2,9 @@ namespace SentimentFS.AnalysisServer.Core.Tweets
 
 module Messages =
     open System
-    open SentimentFS.AnalysisServer.Core.Sentiment
     open Cassandra
     open SentimentFS.NaiveBayes.Dto
+    open SentimentFS.AnalysisServer.Core.Sentiment.Messages
 
     [<CLIMutable>]
     type Tweet = { IdStr: string
@@ -132,7 +132,7 @@ module TweetsStorage =
 
 module TwitterApiClient =
     open Messages
-    open SentimentFS.AnalysisServer.Core.Sentiment
+    open SentimentFS.AnalysisServer.Core.Sentiment.Messages
     open System
     open Akka.Actor
     open Tweetinvi
@@ -184,7 +184,7 @@ module TwitterApiClient =
                 let! result = agent.PostAndAsyncReply(fun ch -> GetTweets(msg.key, ch))
                 sender.Tell(result)
                 return 0
-            } |> Async.StartAsTask :> System.Threading.Tasks.Task
+            } |> Async.StartAsTask :> Threading.Tasks.Task
 
 
 module TweetsMaster =
@@ -193,7 +193,7 @@ module TweetsMaster =
     open Tweetinvi.Models
     open Messages
     open SentimentFS.AnalysisServer.Core.Actor
-    open SentimentFS.AnalysisServer.Core.Sentiment
+    open SentimentFS.AnalysisServer.Core.Sentiment.Messages
     open TweetsStorage
     open TwitterApiClient
     open SentimentFS.NaiveBayes.Dto

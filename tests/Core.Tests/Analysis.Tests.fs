@@ -4,7 +4,8 @@ module Analysis =
     open Expecto
     open SentimentFS.AnalysisServer.Core.Analysis
     open SentimentFS.AnalysisServer.Core.Tweets.Messages
-    open SentimentFS.AnalysisServer.Core.Sentiment
+    open SentimentFS.AnalysisServer.Core.Sentiment.Messages
+
     [<Tests>]
     let tests =
         testList "Analysis" [
