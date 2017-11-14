@@ -12,7 +12,7 @@ open SentimentFS.AnalysisServer.Core.Sentiment.Messages
 open SentimentFS.AnalysisServer.Core.Sentiment.Actor
 open SentimentFS.AnalysisServer.Core.Sentiment.Init
 
-type ApiActor(config: AppConfig, session: ISession) as this =
+type ApiMasterActor(config: AppConfig, session: ISession) as this =
     inherit ReceiveActor()
     do
         this.Receive<Train>(this.HandleTrainQuery)
