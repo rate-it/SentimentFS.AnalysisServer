@@ -111,7 +111,7 @@ module TweetsStorage =
             async {
                 match msg with
                 | Store tweets ->
-                    session |> store(tweets) |> ignore
+                    do! session |> store(tweets) |> Async.Ignore
                 | GetByKey key ->
                     let! res = session |> getByKey key
                     match res |> Seq.toList with
