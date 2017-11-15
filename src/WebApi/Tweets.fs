@@ -1,19 +1,12 @@
 namespace SentimentFS.AnalysisServer.WebApi
 
-open Suave.State.CookieStateStore
-open SentimentFS.AnalysisServer.Core.Tweets
 module Tweets =
-    open SentimentFS.AnalysisServer.Core.Config
     open Akka.Actor
     open SentimentFS.AnalysisServer.Core.Actor
-    open SentimentFS.AnalysisServer.WebApi.Storage
-    open SentimentFS.AnalysisServer.Core.Tweets.TweetsMaster
     open SentimentFS.AnalysisServer.Core.Tweets.Messages
     open Suave
-    open Suave.Filters
-    open Suave.Operators
-    open Suave.Successful
-    open SentimentFS.AnalysisServer.Core.Tweets.Messages
+    open Filters
+    open Operators
 
     let tweetsController (system: ActorSystem) =
 
