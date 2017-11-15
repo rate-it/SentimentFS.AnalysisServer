@@ -3,7 +3,6 @@ open Akka.Actor
 open Akka.Routing
 open SentimentFS.AnalysisServer.Core.Config
 open SentimentFS.AnalysisServer.Core.Actor
-open SentimentFS.AnalysisServer.Core.Sentiment
 open Cassandra
 open SentimentFS.AnalysisServer.Core.Tweets.TweetsMaster
 open SentimentFS.AnalysisServer.Core.Tweets.Messages

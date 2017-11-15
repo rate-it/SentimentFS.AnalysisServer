@@ -12,9 +12,9 @@ module JSON =
 module SuaveJson =
     open JSON
     open Suave
-    open Suave.Successful
-    open Suave.Operators
-    open Suave.Writers
+    open Successful
+    open Operators
+    open Writers
 
     let getResourceFromReq<'a> (req : HttpRequest) =
         let getString rawForm =

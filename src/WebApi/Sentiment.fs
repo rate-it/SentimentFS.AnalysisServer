@@ -3,11 +3,10 @@ namespace SentimentFS.AnalysisServer.WebApi
 module SentimentApi =
     open Akka.Actor
     open Suave
-    open Suave.Filters
-    open Suave.Operators
-    open Suave.Successful
+    open Filters
+    open Operators
+    open Successful
     open SentimentFS.AnalysisServer.Core.Actor
-    open SentimentFS.AnalysisServer.Core.Config
     open SentimentFS.NaiveBayes.Dto
     open SentimentFS.AnalysisServer.Core.Sentiment.Messages
     open SentimentFS.AnalysisServer.Core.Sentiment.Dto
