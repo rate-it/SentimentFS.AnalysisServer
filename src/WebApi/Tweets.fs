@@ -1,5 +1,7 @@
 namespace SentimentFS.AnalysisServer.WebApi
 
+open Suave.State.CookieStateStore
+open SentimentFS.AnalysisServer.Core.Tweets
 module Tweets =
     open SentimentFS.AnalysisServer.Core.Config
     open Akka.Actor
@@ -23,9 +25,18 @@ module Tweets =
                     return! (SuaveJson.toJson result) x
                 }
 
+        let getSearchKeys(): WebPart =
+            fun (x: HttpContext) ->
+                async {
+                    let api = system.ActorSelection(Actors.apiActor.Path)
+                    let! result = api.Ask<string seq>(GetKeys) |> Async.AwaitTask
+                    return! (SuaveJson.toJson result) x
+                }
+
 
         pathStarts "/api/tweets" >=> choose [
-            GET >=> choose [ pathScan "/api/tweets/%s" getTweetsBySearchKeys ]
+            GET >=> choose [ pathScan "/api/tweets/key/%s" getTweetsBySearchKeys ]
+            GET >=> choose [ path "/api/tweets/keys" >=>  warbler(fun _ -> getSearchKeys()) ]
         ]
 
 

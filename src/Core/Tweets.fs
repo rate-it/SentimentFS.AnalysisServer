@@ -1,7 +1,5 @@
 namespace SentimentFS.AnalysisServer.Core.Tweets
 
-open Hopac.Job
-open Tweetinvi.Logic
 module Messages =
     open System
     open Cassandra
@@ -34,7 +32,7 @@ module Messages =
                                   Latitude = 0.0
                                   Sentiment = Emotion.Neutral }
         member this.WithNewSentiment(score: ClassificationScore<Emotion>) =
-            let bestEmotion, _ = score.score |> Map.toList |> List.maxBy(fun (emotion, value) -> value)
+            let bestEmotion, _ = score.score |> Map.toList |> List.maxBy(fun (_, value) -> value)
             { this with Sentiment = bestEmotion }
 
 
@@ -53,7 +51,7 @@ module Messages =
         | GetTweets of key: string * AsyncReplyChannel<Tweets option>
 
     type GetTweetsByKey = { key : string }
-
+    type GetKeys = GetKeys
 
 module TweetsStorage =
     open System
@@ -100,9 +98,7 @@ module TweetsStorage =
         async {
             let q = SimpleStatement("SELECT DISTINCT key FROM tweets;")
             let! result = session.ExecuteAsync(q.SetPageSize(100)) |> Async.AwaitTask
-            return match (result.GetRows()) |> Seq.toList with
-                   | [] -> None
-                   | l -> Some (l |> List.map(fun x -> x.GetValue<string>("key")))
+            return result.GetRows() |> Seq.map(fun x -> x.GetValue<string>("key"))
         }
 
     type TweetsStorageActor(session: ISession) as this =
@@ -189,7 +185,6 @@ module TwitterApiClient =
 module TweetsMaster =
     open Cassandra
     open Akka.Actor
-    open Tweetinvi.Models
     open Messages
     open SentimentFS.AnalysisServer.Core.Actor
     open SentimentFS.AnalysisServer.Core.Sentiment.Messages
@@ -205,6 +200,7 @@ module TweetsMaster =
 
         do
             this.ReceiveAsync<GetTweetsByKey>(fun msg -> this.HandleGetTweetsByKey(msg))
+            this.Receive<GetKeys>(this.HandleGetKeys)
 
         override this.PreStart() =
             tweetDbActor <- Akka.Actor.Internal.InternalCurrentActorCellKeeper.Current.ActorOf(Props.Create<TweetsStorageActor>(session), Actors.tweetStorageActor.Name)
@@ -213,7 +209,6 @@ module TweetsMaster =
 
         member this.HandleGetTweetsByKey(msg: GetTweetsByKey) =
             let sender = this.Sender
-            let self = this.Self
             let sentimentActor = Akka.Actor.Internal.InternalCurrentActorCellKeeper.Current.ActorSelection(Actors.sentimentActor.Path)
             async {
                 let! result = tweetDbActor.Ask<Tweets option>(GetByKey(msg.key)) |> Async.AwaitTask
@@ -237,4 +232,7 @@ module TweetsMaster =
                         sender.Tell(None)
             } |> Async.StartAsTask :> System.Threading.Tasks.Task
 
+        member this.HandleGetKeys(_: GetKeys) =
+            tweetDbActor.Forward(GetSearchKeys)
+            true
 

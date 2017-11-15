@@ -19,6 +19,7 @@ type ApiMasterActor(config: AppConfig, session: ISession) as this =
         this.Receive<Classify>(this.HandleClassifyQuery)
         this.Receive<GetTweetsByKey>(this.HandleGetTweetsByKey)
         this.Receive<GetAnalysisForKey>(this.HandleGetAnalysisForKey)
+        this.Receive<GetKeys>(this.HandleGetSearchKeys)
 
     let mutable sentimentActor: IActorRef = null
     let mutable tweetsMasterActor: IActorRef = null
@@ -40,6 +41,10 @@ type ApiMasterActor(config: AppConfig, session: ISession) as this =
         true
 
     member this.HandleGetTweetsByKey(msg: GetTweetsByKey) =
+        tweetsMasterActor.Forward(msg)
+        true
+
+    member this.HandleGetSearchKeys(msg: GetKeys) =
         tweetsMasterActor.Forward(msg)
         true
 
