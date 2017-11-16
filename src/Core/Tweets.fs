@@ -2,7 +2,6 @@ namespace SentimentFS.AnalysisServer.Core.Tweets
 
 open System
 module Messages =
-    open System
     open Cassandra
     open SentimentFS.NaiveBayes.Dto
     open SentimentFS.AnalysisServer.Core.Sentiment.Messages
