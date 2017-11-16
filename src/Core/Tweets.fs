@@ -1,5 +1,6 @@
 namespace SentimentFS.AnalysisServer.Core.Tweets
 
+open System
 module Messages =
     open System
     open Cassandra
@@ -51,6 +52,7 @@ module Messages =
         | GetTweets of key: string * AsyncReplyChannel<Tweets option>
 
     type GetTweetsByKey = { key : string }
+    type GetTweetsFromApi = { key: string; since: DateTime; quantity: int }
     type GetKeys = GetKeys
 
 module TweetsStorage =
@@ -128,7 +130,6 @@ module TweetsStorage =
 module TwitterApiClient =
     open Messages
     open SentimentFS.AnalysisServer.Core.Sentiment.Messages
-    open System
     open Akka.Actor
     open Tweetinvi
     open Tweetinvi.Models
@@ -137,48 +138,35 @@ module TwitterApiClient =
     [<CLIMutable>]
     type TwitterCredentials = { ConsumerKey: string; ConsumerSecret: string; AccessToken: string; AccessTokenSecret: string }
 
-    let private spawn(credentials: TwitterCredentials) =
-        Auth.SetUserCredentials(credentials.ConsumerKey, credentials.ConsumerSecret, credentials.AccessToken, credentials.AccessTokenSecret) |> ignore
-        MailboxProcessor.Start(fun agent ->
-            let rec loop () =
-                async {
-                    let! msg = agent.Receive()
-                    match msg with
-                    | GetTweets(key, reply) ->
-                        let options = SearchTweetsParameters(key)
-                        options.SearchType <- Nullable<SearchResultType>(SearchResultType.Recent)
-                        options.Lang <- Nullable<LanguageFilter>(LanguageFilter.English)
-                        options.Filters <- TweetSearchFilters.None
-                        options.MaximumNumberOfResults <- 1000
-                        let! queryResult = SearchAsync.SearchTweets(options) |> Async.AwaitTask
-                        let result = queryResult
-                                        |> Seq.map(fun tweet -> { IdStr = tweet.TweetDTO.IdStr;
-                                                                  Text = tweet.TweetDTO.Text;
-                                                                  Lang = tweet.TweetDTO.Language.ToString();
-                                                                  Key = key; Date = tweet.TweetDTO.CreatedAt;
-                                                                  Longitude = 0.0;
-                                                                  Latitude = 0.0;
-                                                                  Sentiment = Emotion.Neutral })
-                                        |> Seq.toList
-                        match result with
-                        | [] -> reply.Reply(None)
-                        | list -> reply.Reply(Some { value = list })
-                    return! loop()
-                }
-            loop()
-        )
-
     type TwitterApiActor(credentials: TwitterCredentials) as this =
         inherit ReceiveActor()
         do
-            this.ReceiveAsync<GetTweetsByKey>(fun msg -> this.Handle(msg))
-        let agent = spawn(credentials)
-        member this.Handle(msg: GetTweetsByKey) =
+            Auth.SetUserCredentials(credentials.ConsumerKey, credentials.ConsumerSecret, credentials.AccessToken, credentials.AccessTokenSecret) |> ignore
+            this.ReceiveAsync<GetTweetsFromApi>(fun msg -> this.Handle(msg))
+
+        member this.Handle(msg: GetTweetsFromApi) =
             let sender = this.Sender
             async {
-                let! result = agent.PostAndAsyncReply(fun ch -> GetTweets(msg.key, ch))
-                sender.Tell(result)
-                return 0
+                let options = SearchTweetsParameters(msg.key)
+                options.SearchType <- Nullable<SearchResultType>(SearchResultType.Recent)
+                options.Lang <- Nullable<LanguageFilter>(LanguageFilter.English)
+                options.Filters <- TweetSearchFilters.None
+                options.MaximumNumberOfResults <- msg.quantity
+                options.Since <- msg.since
+                let! queryResult = SearchAsync.SearchTweets(options) |> Async.AwaitTask
+                let result = queryResult
+                                |> Seq.filter(fun tweet -> not tweet.IsRetweet)
+                                |> Seq.map(fun tweet -> { IdStr = tweet.IdStr;
+                                                          Text = tweet.Text;
+                                                          Lang = tweet.Language.ToString();
+                                                          Key = msg.key;
+                                                          Date = tweet.CreatedAt;
+                                                          Longitude = match tweet.Coordinates with null -> 0.0 | coord -> coord.Longitude;
+                                                          Latitude = match tweet.Coordinates with null -> 0.0 | coord -> coord.Latitude;
+                                                          Sentiment = Emotion.Neutral })
+                match result |> Seq.toList with
+                | [] -> sender.Tell(None)
+                | list -> Some { value = list} |> sender.Tell
             } |> Async.StartAsTask :> Threading.Tasks.Task
 
 
@@ -216,7 +204,7 @@ module TweetsMaster =
                 | Some tweets ->
                     sender.Tell(Some tweets)
                 | None ->
-                    let! api = twitterApiActor.Ask<Tweets option>(msg) |> Async.AwaitTask
+                    let! api = twitterApiActor.Ask<Tweets option>({ key = msg.key; since = DateTime.MinValue; quantity = 1000 }) |> Async.AwaitTask
                     match api with
                     | Some apiTweets ->
                         let sentiments = apiTweets.value
@@ -230,7 +218,7 @@ module TweetsMaster =
                         sender.Tell(Some { value = tweetsList})
                     | None ->
                         sender.Tell(None)
-            } |> Async.StartAsTask :> System.Threading.Tasks.Task
+            } |> Async.StartAsTask :> Threading.Tasks.Task
 
         member this.HandleGetKeys(_: GetKeys) =
             tweetDbActor.Forward(GetSearchKeys)
