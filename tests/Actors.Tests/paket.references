@@ -3,5 +3,6 @@ xunit
 xunit.runner.visualstudio
 Microsoft.DotNet.Watcher.Tools
 Akka.TestKit.Xunit2
+Akka.Streams.TestKit
 dotnet-xunit
 SentimentFS.NaiveBayes
