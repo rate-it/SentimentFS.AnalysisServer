@@ -1,5 +1,6 @@
 namespace SentimentFS.AnalysisServer.Core.Sentiment
 
+open System.Collections.Generic
 module Messages =
     open SentimentFS.NaiveBayes.Dto
 
@@ -23,6 +24,7 @@ module Init =
     open System.Net.Http
     open Newtonsoft.Json
     open Akka.Actor
+    open System.Linq
 
     let private intToEmotion (value: int): Emotion =
         match value with
@@ -40,13 +42,10 @@ module Init =
             result.EnsureSuccessStatusCode() |> ignore
             return! result.Content.ReadAsStringAsync() |> Async.AwaitTask } |> Async.RunSynchronously
 
-        let emotions = httpResult
-                            |> JsonConvert.DeserializeObject<Map<string, int>>
-                            |> Map.toList
-                            |> List.map(fun (word, em) -> struct (word, em |> intToEmotion))
+        let emotions = httpResult |> JsonConvert.DeserializeObject<IDictionary<string, int>>
 
-        for struct (word, emotion) in emotions do
-            sentimentActor.Tell({ trainQuery =  { value = word; category = emotion; weight = None } })
+        for keyValue in emotions do
+            sentimentActor.Tell({ trainQuery =  { value = keyValue.Key; category = keyValue.Value |> intToEmotion ; weight = None } })
 
 
 module Actor =
@@ -82,6 +81,7 @@ module Actor =
         let mutable state = Trainer.init<Emotion>(config)
 
         member this.HandleTrainMessage(msg: Train) : bool =
+            printfn "Training"
             state <- state |> Trainer.train(msg.trainQuery)
             true
 
