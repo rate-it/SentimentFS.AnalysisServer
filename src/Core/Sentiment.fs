@@ -19,12 +19,16 @@ module Dto =
     [<CLIMutable>]
     type TrainingQuery<'a when 'a : comparison> = { value: string; category: 'a; weight : int }
 
-module Init =
+module Actor =
+    open SentimentFS.NaiveBayes.Dto
+    open SentimentFS.TextUtilities
+    open SentimentFS.Stemmer.Stemmer
+    open SentimentFS.NaiveBayes.Training
+    open SentimentFS.NaiveBayes.Classification
+    open Akka.Actor
     open Messages
     open System.Net.Http
     open Newtonsoft.Json
-    open Akka.Actor
-    open System.Linq
 
     let private intToEmotion (value: int): Emotion =
         match value with
@@ -34,28 +38,6 @@ module Init =
         | 1 | 2 | 3 -> Emotion.Positive
         | 4 | 5 -> Emotion.VeryPositive
         | _ -> Emotion.Neutral
-
-    let initSentimentActor (trainDataUrl: string) (sentimentActor: IActorRef) =
-        let httpResult = async {
-            use client = new HttpClient()
-            let! result = client.GetAsync(System.Uri(trainDataUrl)) |> Async.AwaitTask
-            result.EnsureSuccessStatusCode() |> ignore
-            return! result.Content.ReadAsStringAsync() |> Async.AwaitTask } |> Async.RunSynchronously
-
-        let emotions = httpResult |> JsonConvert.DeserializeObject<IDictionary<string, int>>
-
-        for keyValue in emotions do
-            sentimentActor.Tell({ trainQuery =  { value = keyValue.Key; category = keyValue.Value |> intToEmotion ; weight = None } })
-
-
-module Actor =
-    open SentimentFS.NaiveBayes.Dto
-    open SentimentFS.TextUtilities
-    open SentimentFS.Stemmer.Stemmer
-    open SentimentFS.NaiveBayes.Training
-    open SentimentFS.NaiveBayes.Classification
-    open Akka.Actor
-    open Messages
 
     let stopWords = """a about above after again against all am an and any are aren't as at be
       because been before being below between both but by can't cannot could
@@ -73,12 +55,25 @@ module Actor =
 
     let defaultClassificatorConfig: Config = { model = Naive; defaultWeight = 1; stem = stem; stopWords = stopWords }
 
-    type SentimentActor(config: Config option) as this =
+    type SentimentActor(tainingDataUrl: string, config: Config option) as this =
         inherit ReceiveActor()
         do
             this.Receive<Train>(this.HandleTrainMessage)
             this.Receive<Classify>(this.HandleClassifyMessage)
         let mutable state = Trainer.init<Emotion>(config)
+
+        override this.PreStart() =
+            let context =  Akka.Actor.Internal.InternalCurrentActorCellKeeper.Current;
+            let httpResult = async {
+                use client = new HttpClient()
+                let! result = client.GetAsync(System.Uri(tainingDataUrl)) |> Async.AwaitTask
+                result.EnsureSuccessStatusCode() |> ignore
+                return! result.Content.ReadAsStringAsync() |> Async.AwaitTask } |> Async.RunSynchronously
+
+            let emotions = httpResult |> JsonConvert.DeserializeObject<IDictionary<string, int>>
+
+            for keyValue in emotions do
+                context.Self.Tell({ trainQuery =  { value = keyValue.Key; category = keyValue.Value |> intToEmotion ; weight = None } })
 
         member this.HandleTrainMessage(msg: Train) : bool =
             printfn "Training"
