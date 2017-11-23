@@ -11,6 +11,8 @@ nuget SentimentFS.Stemmer
 nuget TweetinviAPI
 nuget Hopac
 nuget Akka
+nuget Akka.Streams
+nuget Akka.Streams.TestKit
 nuget Newtonsoft.Json
 nuget Microsoft.NET.Test.Sdk
 nuget Akka.Serialization.Hyperion

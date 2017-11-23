@@ -1,4 +1,5 @@
 Akka
+Akka.Streams
 FSharp.Core
 SentimentFS.NaiveBayes
 SentimentFS.Stemmer
