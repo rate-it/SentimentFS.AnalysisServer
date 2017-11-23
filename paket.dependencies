@@ -3,7 +3,6 @@ source https://www.myget.org/F/machine-learning/api/v3/index.json
 source https://api.nuget.org/v3/index.json
 source https://www.myget.org/F/sentimentfs/api/v2
 
-nuget Suave
 nuget CassandraCSharpDriver
 nuget FSharp.Core
 nuget SentimentFS.NaiveBayes
@@ -19,10 +18,8 @@ nuget Akka.Serialization.Hyperion
 nuget xunit
 nuget xunit.runner.visualstudio
 nuget Akka.TestKit.Xunit2
-nuget Microsoft.Extensions.Configuration.Json
-nuget Microsoft.Extensions.Configuration.EnvironmentVariables
-nuget Microsoft.Extensions.Configuration.CommandLine
-nuget Microsoft.Extensions.Configuration.Binder
+nuget Giraffe
+nuget Microsoft.AspNetCore.All
 nuget Fable.JsonConverter
 nuget Expecto
 nuget YoloDev.Expecto.TestSdk

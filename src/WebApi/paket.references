@@ -1,12 +1,9 @@
 FSharp.Core
-Suave
 Akka
 Newtonsoft.Json
 Microsoft.DotNet.Watcher.Tools
 TweetinviAPI
 CassandraCSharpDriver
-Microsoft.Extensions.Configuration.Json
-Microsoft.Extensions.Configuration.EnvironmentVariables
-Microsoft.Extensions.Configuration.CommandLine
-Microsoft.Extensions.Configuration.Binder
+Microsoft.AspNetCore.All
+Giraffe
 Fable.JsonConverter
