@@ -22,6 +22,7 @@ module Program =
     open SentimentFS.AnalysisServer.Core.Config
     open SentimentFS.AnalysisServer.Core.Api
     open Microsoft.Extensions.Configuration
+    open Microsoft.Extensions.Configuration
 
     let GetEnvVar var =
         match System.Environment.GetEnvironmentVariable(var) with
@@ -36,14 +37,17 @@ module Program =
 // Config and Main
 // ---------------------------------
 
+    let configuration =
+        ConfigurationBuilder().AddJsonFile("appsettings.json").AddEnvironmentVariables().Build()
+
     let configureCors (builder : CorsPolicyBuilder) =
-        builder.WithOrigins("http://localhost:8080").AllowAnyMethod().AllowAnyHeader() |> ignore
+        builder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader() |> ignore
 
     let configureApp (app : IApplicationBuilder) =
         app.UseCors(configureCors)
            .UseGiraffeErrorHandler(errorHandler)
            .UseStaticFiles()
-           .UseGiraffe(WebServer.app)
+           .UseGiraffe(WebServer.app configuration)
 
     let configureServices (services : IServiceCollection) =
         let sp  = services.BuildServiceProvider()
@@ -56,14 +60,6 @@ module Program =
 
     [<EntryPoint>]
     let main argv =
-        let akkaConfig = ConfigurationFactory.ParseString(File.ReadAllText("./akka.json"))
-        let configurationRoot = ConfigurationBuilder().AddJsonFile("appsettings.json").AddEnvironmentVariables().AddCommandLine(argv).Build();
-        let appconfig = AppConfig.Zero()
-        configurationRoot.Bind(appconfig) |> ignore
-        let actorSystem = ActorSystem.Create("sentimentfs", akkaConfig)
-        let session = Cassandra.cluster appconfig |> Cassandra.session appconfig
-        let apiActor = actorSystem.ActorOf(Props.Create<ApiMasterActor>(appconfig, session), Actors.apiActor.Name)
-
         try
             let contentRoot = Directory.GetCurrentDirectory()
             let webRoot  = Path.Combine(contentRoot, "WebRoot")
