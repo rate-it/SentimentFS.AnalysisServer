@@ -2,10 +2,6 @@ namespace SentimentFS.AnalysisServer.WebApi
 
 module Analysis =
     open Akka.Actor
-    open Suave
-    open Suave.Filters
-    open Suave.Operators
-    open Suave.Successful
     open SentimentFS.AnalysisServer.Core.Analysis
     open SentimentFS.AnalysisServer.Core.Sentiment
     open SentimentFS.AnalysisServer.Core.Actor
