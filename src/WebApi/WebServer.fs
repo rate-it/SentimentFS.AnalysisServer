@@ -17,9 +17,9 @@ module WebServer =
         let akkaConfig = ConfigurationFactory.ParseString(File.ReadAllText("./akka.json"))
         let appconfig = AppConfig.Zero()
         config.Bind(appconfig) |> ignore
-        use actorSystem = ActorSystem.Create("sentimentfs", akkaConfig)
-        use session = Cassandra.cluster appconfig |> Cassandra.session appconfig
-        let apiActor = actorSystem.ActorOf(Props.Create<ApiMasterActor>(appconfig, session), Actors.apiActor.Name)
+        let actorSystem = ActorSystem.Create("sentimentfs", akkaConfig)
+        let cluster = Cassandra.cluster appconfig
+        let apiActor = actorSystem.ActorOf(Props.Create<ApiMasterActor>(appconfig, cluster), Actors.apiActor.Name)
         choose [
             sentimentController actorSystem
         ]

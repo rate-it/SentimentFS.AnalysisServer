@@ -1,13 +1,13 @@
 
 PUT /api/sentiment/trainer HTTP/1.1
-Host: localhost:8080
+Host: localhost:5000
 Content-Type: application/json
 Cache-Control: no-cache
 
 { "value": "test", "category": -2, "weight" : 1 }
 
 POST /api/sentiment/classification HTTP/1.1
-Host: localhost:8080
+Host: localhost:5000
 Content-Type: application/json
 Cache-Control: no-cache
 
@@ -16,15 +16,15 @@ Cache-Control: no-cache
 }
 
 GET /api/tweets/key/fsharp HTTP/1.1
-Host: localhost:8080
+Host: localhost:5000
 Content-Type: application/json
 Cache-Control: no-cache
 
 GET /api/tweets/keys HTTP/1.1
-Host: localhost:8080
+Host: localhost:5000
 Content-Type: application/json
 Cache-Control: no-cache
 
 GET /api/analysis/result/fsharp HTTP/1.1
-Host: localhost:8080
+Host: localhost:5000
 Cache-Control: no-cache

@@ -102,8 +102,9 @@ module TweetsStorage =
             return result.GetRows() |> Seq.map(fun x -> x.GetValue<string>("key"))
         }
 
-    type TweetsStorageActor(session: ISession) as this =
+    type TweetsStorageActor(cluster: Cluster) as this =
         inherit ReceiveActor()
+        let session = cluster.ConnectAndCreateDefaultKeyspaceIfNotExists()
         do
             createTweetsCollectionIfNotExists(session) |> ignore
             this.ReceiveAsync<TweetsStorageMessage>(fun msg -> this.Handle(msg))
@@ -179,7 +180,7 @@ module TweetsMaster =
     open TwitterApiClient
     open SentimentFS.NaiveBayes.Dto
 
-    type TweetsMasterActor(session: ISession, credentials : TwitterCredentials) as this =
+    type TweetsMasterActor(cluster: Cluster, credentials : TwitterCredentials) as this =
         inherit ReceiveActor()
 
         let mutable tweetDbActor: IActorRef = null
@@ -190,7 +191,7 @@ module TweetsMaster =
             this.Receive<GetKeys>(this.HandleGetKeys)
 
         override this.PreStart() =
-            tweetDbActor <- Akka.Actor.Internal.InternalCurrentActorCellKeeper.Current.ActorOf(Props.Create<TweetsStorageActor>(session), Actors.tweetStorageActor.Name)
+            tweetDbActor <- Akka.Actor.Internal.InternalCurrentActorCellKeeper.Current.ActorOf(Props.Create<TweetsStorageActor>(cluster), Actors.tweetStorageActor.Name)
             twitterApiActor <- Akka.Actor.Internal.InternalCurrentActorCellKeeper.Current.ActorOf(Props.Create<TwitterApiActor>(credentials), Actors.twitterApiActor.Name)
             base.PreStart()
 
