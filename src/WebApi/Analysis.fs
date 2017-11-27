@@ -4,6 +4,7 @@ module Analysis =
     open Akka.Actor
     open SentimentFS.AnalysisServer.Core.Analysis
     open SentimentFS.AnalysisServer.Core.Actor
+    open JSON
     open Giraffe
     open Giraffe.Tasks
     open Giraffe.HttpHandlers
@@ -16,7 +17,7 @@ module Analysis =
                 task {
                     let api = system.ActorSelection(Actors.apiActor.Path)
                     let! result = api.Ask<AnalysisScore option>({ searchKey = key })
-                    return! json result next ctx
+                    return! customJson settings result next ctx
                 }
 
         routeStartsWith  "/api/analysis" >=> choose [

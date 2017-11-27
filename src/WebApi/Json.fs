@@ -5,6 +5,9 @@ module JSON =
 
     let jsonConverter = Fable.JsonConverter() :> JsonConverter
 
+    let settings =
+        JsonSerializerSettings(Converters = [|jsonConverter|])
+
     let toJson value = JsonConvert.SerializeObject(value, [|jsonConverter|])
 
     let ofJson<'a>(json: string) = JsonConvert.DeserializeObject<'a>(json, [|jsonConverter|])

@@ -7,6 +7,7 @@ module SentimentApi =
     open SentimentFS.NaiveBayes.Dto
     open SentimentFS.AnalysisServer.Core.Sentiment.Messages
     open SentimentFS.AnalysisServer.Core.Sentiment.Dto
+    open JSON
     open Giraffe
     open Giraffe.Tasks
     open Giraffe.HttpHandlers
@@ -21,7 +22,7 @@ module SentimentApi =
                     let! model = ctx.BindModel<Classify>()
                     let api = system.ActorSelection(Actors.apiActor.Path)
                     let! result= api.Ask<ClassificationScore<Emotion>>(model)
-                    return! json result next ctx
+                    return! customJson settings result next ctx
                 }
         let trainHandler =
             fun (next : HttpFunc) (ctx : HttpContext) ->
@@ -29,7 +30,7 @@ module SentimentApi =
                     let! model = ctx.BindModel<TrainingQuery<Emotion>>()
                     let api = system.ActorSelection(Actors.apiActor.Path)
                     api.Tell({ trainQuery =  { value = model.value; category = model.category; weight = match model.weight with weight when weight > 1 -> Some weight | _ -> None } })
-                    return! json "" next ctx
+                    return! customJson settings "" next ctx
                 }
 
         routeStartsWith  "/api/sentiment" >=> choose [
