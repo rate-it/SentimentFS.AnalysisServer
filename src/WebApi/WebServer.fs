@@ -2,6 +2,7 @@ namespace SentimentFS.AnalysisServer.WebApi
 
 open Microsoft.Extensions.Configuration
 open Tweets
+open Analysis
 module WebServer =
 
     open SentimentApi
@@ -24,4 +25,5 @@ module WebServer =
         choose [
             sentimentController actorSystem
             tweetsController actorSystem
+            analysisController actorSystem
         ]

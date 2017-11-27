@@ -1,25 +1,24 @@
 namespace SentimentFS.AnalysisServer.WebApi
 
-// module Analysis =
-//     open Akka.Actor
-//     open SentimentFS.AnalysisServer.Core.Analysis
-//     open SentimentFS.AnalysisServer.Core.Sentiment
-//     open SentimentFS.AnalysisServer.Core.Actor
-//     open Cassandra
-//     open Tweetinvi
-//     open System.Net.Http
-//     open Newtonsoft.Json
-//     open SentimentFS.AnalysisServer.Core.Config
+module Analysis =
+    open Akka.Actor
+    open SentimentFS.AnalysisServer.Core.Analysis
+    open SentimentFS.AnalysisServer.Core.Actor
+    open Giraffe
+    open Giraffe.Tasks
+    open Giraffe.HttpHandlers
+    open Giraffe.HttpContextExtensions
+    open Microsoft.AspNetCore.Http
 
-//     let analysisController(system: ActorSystem) =
-//         let getAnalysisResultByKey(key):WebPart =
-//             fun (x : HttpContext) ->
-//                 async {
-//                     let api = system.ActorSelection(Actors.apiActor.Path)
-//                     let! result = api.Ask<AnalysisScore option>({ searchKey = key }) |> Async.AwaitTask
-//                     return! (SuaveJson.toJson result) x
-//                 }
+    let analysisController(system: ActorSystem) =
+        let getAnalysisResultByKey(key) =
+            fun (next : HttpFunc) (ctx : HttpContext) ->
+                task {
+                    let api = system.ActorSelection(Actors.apiActor.Path)
+                    let! result = api.Ask<AnalysisScore option>({ searchKey = key })
+                    return! json result next ctx
+                }
 
-//         pathStarts "/api/analysis" >=> choose [
-//             GET >=> choose [ pathScan "/api/analysis/result/%s" getAnalysisResultByKey ]
-//         ]
+        routeStartsWith  "/api/analysis" >=> choose [
+            GET >=> routef  "/api/analysis/result/%s" getAnalysisResultByKey
+        ]
