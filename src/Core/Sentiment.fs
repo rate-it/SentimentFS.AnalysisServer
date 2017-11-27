@@ -76,7 +76,6 @@ module Actor =
                 context.Self.Tell({ trainQuery =  { value = keyValue.Key; category = keyValue.Value |> intToEmotion ; weight = None } })
 
         member this.HandleTrainMessage(msg: Train) : bool =
-            printfn "Training"
             state <- state |> Trainer.train(msg.trainQuery)
             true
 

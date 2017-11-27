@@ -9,9 +9,8 @@ open SentimentFS.AnalysisServer.Core.Tweets.Messages
 open SentimentFS.AnalysisServer.Core.Analysis
 open SentimentFS.AnalysisServer.Core.Sentiment.Messages
 open SentimentFS.AnalysisServer.Core.Sentiment.Actor
-open SentimentFS.AnalysisServer.Core.Sentiment.Init
 
-type ApiMasterActor(config: AppConfig, session: ISession) as this =
+type ApiMasterActor(config: AppConfig, cluster: Cluster) as this =
     inherit ReceiveActor()
     do
         this.Receive<Train>(this.HandleTrainQuery)
@@ -25,9 +24,8 @@ type ApiMasterActor(config: AppConfig, session: ISession) as this =
     let mutable analysisActor: IActorRef = null
 
     override this.PreStart() =
-            sentimentActor <- Akka.Actor.Internal.InternalCurrentActorCellKeeper.Current.ActorOf(Props.Create<SentimentActor>(Some defaultClassificatorConfig), Actors.sentimentActor.Name)
-            initSentimentActor(config.Sentiment.InitFileUrl)(sentimentActor)
-            tweetsMasterActor <- Akka.Actor.Internal.InternalCurrentActorCellKeeper.Current.ActorOf(Props.Create<TweetsMasterActor>(session, config.TwitterApiCredentials).WithRouter(FromConfig.Instance), Actors.tweetsMaster.Name)
+            sentimentActor <- Akka.Actor.Internal.InternalCurrentActorCellKeeper.Current.ActorOf(Props.Create<SentimentActor>(config.Sentiment.InitFileUrl, Some defaultClassificatorConfig), Actors.sentimentActor.Name)
+            tweetsMasterActor <- Akka.Actor.Internal.InternalCurrentActorCellKeeper.Current.ActorOf(Props.Create<TweetsMasterActor>(cluster, config.TwitterApiCredentials).WithRouter(FromConfig.Instance), Actors.tweetsMaster.Name)
             analysisActor <- Akka.Actor.Internal.InternalCurrentActorCellKeeper.Current.ActorOf(Props.Create<AnalysisActor>().WithRouter(FromConfig.Instance), Actors.analysisActor.Name)
             base.PreStart()
 

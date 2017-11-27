@@ -2,32 +2,38 @@ namespace SentimentFS.AnalysisServer.WebApi
 
 module SentimentApi =
     open Akka.Actor
-    open Suave
-    open Filters
     open Operators
-    open Successful
     open SentimentFS.AnalysisServer.Core.Actor
     open SentimentFS.NaiveBayes.Dto
     open SentimentFS.AnalysisServer.Core.Sentiment.Messages
     open SentimentFS.AnalysisServer.Core.Sentiment.Dto
+    open JSON
+    open Giraffe
+    open Giraffe.Tasks
+    open Giraffe.HttpHandlers
+    open Giraffe.HttpContextExtensions
+    open Microsoft.AspNetCore.Http
+
 
     let sentimentController (system: ActorSystem) =
-        let classify(query: Classify):WebPart =
-            fun (x : HttpContext) ->
-                async {
+        let classifyHandler =
+            fun (next : HttpFunc) (ctx : HttpContext) ->
+                task {
+                    let! model = ctx.BindModel<Classify>()
                     let api = system.ActorSelection(Actors.apiActor.Path)
-                    let! result = api.Ask<ClassificationScore<Emotion>>(query) |> Async.AwaitTask
-                    return! (SuaveJson.toJson result) x
+                    let! result= api.Ask<ClassificationScore<Emotion>>(model)
+                    return! customJson settings result next ctx
                 }
-        let train (query: TrainingQuery<Emotion>): WebPart =
-            fun (x: HttpContext) ->
-                async {
+        let trainHandler =
+            fun (next : HttpFunc) (ctx : HttpContext) ->
+                task {
+                    let! model = ctx.BindModel<TrainingQuery<Emotion>>()
                     let api = system.ActorSelection(Actors.apiActor.Path)
-                    api.Tell({ trainQuery =  { value = query.value; category = query.category; weight = match query.weight with weight when weight > 1 -> Some weight | _ -> None } })
-                    return! OK "" x
+                    api.Tell({ trainQuery =  { value = model.value; category = model.category; weight = match model.weight with weight when weight > 1 -> Some weight | _ -> None } })
+                    return! customJson settings "" next ctx
                 }
 
-        pathStarts "/api/sentiment" >=> choose [
-            POST >=> choose [ path "/api/sentiment/classification" >=> request (SuaveJson.getResourceFromReq >> classify) ]
-            PUT >=> choose [ path "/api/sentiment/trainer" >=> request (SuaveJson.getResourceFromReq >> train)]
+        routeStartsWith  "/api/sentiment" >=> choose [
+            POST >=> route "/api/sentiment/classification" >=> classifyHandler
+            PUT >=> route "/api/sentiment/trainer" >=> trainHandler
         ]
