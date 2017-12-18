@@ -19,7 +19,7 @@ module SentimentApi =
         let classifyHandler =
             fun (next : HttpFunc) (ctx : HttpContext) ->
                 task {
-                    let! model = ctx.BindModel<Classify>()
+                    let! model = ctx.BindModelAsync<Classify>()
                     let api = system.ActorSelection(Actors.apiActor.Path)
                     let! result= api.Ask<ClassificationScore<Emotion>>(model)
                     return! customJson settings result next ctx
@@ -27,7 +27,7 @@ module SentimentApi =
         let trainHandler =
             fun (next : HttpFunc) (ctx : HttpContext) ->
                 task {
-                    let! model = ctx.BindModel<TrainingQuery<Emotion>>()
+                    let! model = ctx.BindModelAsync<TrainingQuery<Emotion>>()
                     let api = system.ActorSelection(Actors.apiActor.Path)
                     api.Tell({ trainQuery =  { value = model.value; category = model.category; weight = match model.weight with weight when weight > 1 -> Some weight | _ -> None } })
                     return! customJson settings "" next ctx
