@@ -1,0 +1,11 @@
+FSharp.Core
+Akka
+Akka.Remote
+Akka.Logger.Serilog
+Akka.Persistence.Redis
+Akkling
+Akkling.Persistence
+Akka.Serialization.Hyperion
+FsPickler
+SentimentFS.NaiveBayes
+SentimentFS.Stemmer

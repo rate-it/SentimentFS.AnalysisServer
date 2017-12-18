@@ -10,8 +10,15 @@ nuget SentimentFS.Stemmer
 nuget TweetinviAPI
 nuget Hopac
 nuget Akka
+nuget Akka.Remote
+nuget Akka.Logger.Serilog
+nuget Akka.Persistence.Redis
 nuget Akka.Streams
 nuget Akka.Streams.TestKit
+nuget Akkling
+nuget Akkling.Persistence
+nuget Akkling.TestKit
+nuget FsPickler 3.4.0
 nuget Newtonsoft.Json
 nuget Microsoft.NET.Test.Sdk
 nuget Akka.Serialization.Hyperion
