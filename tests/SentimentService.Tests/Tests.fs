@@ -7,8 +7,8 @@ module Tests =
     open Akkling.TestKit
     open Akka.TestKit.Xunit2
     open SentimentFS.NaiveBayes.Dto
-    open SentimentFS.SentimentService.Messages
-    open SentimentFS.SentimentService.Actor
+    open SentimentFS.AnalysisServer.SentimentService.Messages
+    open SentimentFS.AnalysisServer.SentimentService.Actor
     open Akkling.Persistence.Props
     open Akkling
     open Akkling.Behaviors
