@@ -1,31 +1,7 @@
 namespace SentimentFS.AnalysisServer.SentimentService
 
-module Messages =
-    open SentimentFS.NaiveBayes.Dto
-
-    type Emotion =
-        | VeryNegative = -2
-        | Negative = -1
-        | Neutral = 0
-        | Positive = 1
-        | VeryPositive = 2
-
-    [<CLIMutable>]
-    type Classify = { text : string }
-
-    [<CLIMutable>]
-    type Train = { trainQuery : TrainingQuery<Emotion> }
-
-    type SentimentActorCommand =
-        | Train of Train
-        | Classify of Classify
-
-    type SentimentMessage =
-        | TrainEvent of Train
-        | SentimentCommand of SentimentActorCommand
-
 module Actor =
-    open Messages
+    open SentimentFS.AnalysisServer.Common.Messages.Sentiment
     open System
     open SentimentFS.NaiveBayes.Dto
     open SentimentFS.TextUtilities
@@ -70,13 +46,14 @@ module Actor =
                 let! msg = mailbox.Receive()
                 match msg with
                 | TrainEvent trainMessage ->
-                    return! loop (state |> Trainer.train(trainMessage.trainQuery))
+                    return! loop (state |> Trainer.train({ value = trainMessage.value; category = trainMessage.category; weight = trainMessage.weight }))
                 | SentimentCommand cmd ->
                     match cmd with
                     | Train train ->
                         return! Persist (TrainEvent(train))
                     | Classify query ->
-                        mailbox.Sender() <! (state |> Classifier.classify(query.text))
+                        let result = (state |> Classifier.classify(query.text))
+                        mailbox.Sender() <! { text = query.text; score = result.score }
                         return! loop state
 
             }

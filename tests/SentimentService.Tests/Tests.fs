@@ -7,7 +7,7 @@ module Tests =
     open Akkling.TestKit
     open Akka.TestKit.Xunit2
     open SentimentFS.NaiveBayes.Dto
-    open SentimentFS.AnalysisServer.SentimentService.Messages
+    open SentimentFS.AnalysisServer.Common.Messages.Sentiment
     open SentimentFS.AnalysisServer.SentimentService.Actor
     open Akkling.Persistence.Props
     open Akkling
@@ -22,8 +22,8 @@ module Tests =
         let actor = spawn tck "sentiment" (propsPersist (sentimentActor(None)))
         let positiveText = "I love fsharp"
         let negativeText = "I hate java"
-        actor <! SentimentCommand(Train({ trainQuery =  { value = positiveText; category = Emotion.Positive; weight = None } }))
-        actor <! SentimentCommand(Train({ trainQuery =  { value = negativeText; category = Emotion.Negative; weight = None } }))
+        actor <! SentimentCommand(Train({ value = positiveText; category = Emotion.Positive; weight = None }))
+        actor <! SentimentCommand(Train({ value = negativeText; category = Emotion.Negative; weight = None }))
         actor <! SentimentCommand(Classify({ text = "My brother love fsharp" }))
         let a = expectMsg tck "a"
         ()

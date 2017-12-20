@@ -3,7 +3,6 @@
 open Akkling
 open Akkling.Persistence
 open Actor
-open Messages
 open SentimentFS.NaiveBayes.Dto
 open Akkling
 open System

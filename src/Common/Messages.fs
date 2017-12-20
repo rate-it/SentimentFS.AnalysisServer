@@ -1,5 +1,4 @@
-namespace SentimentFS.AnalysisServer.Messages
-
+namespace SentimentFS.AnalysisServer.Common.Messages
 
 module Sentiment =
 
