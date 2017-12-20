@@ -25,7 +25,7 @@ module Tests =
         actor <! SentimentCommand(Train({ value = positiveText; category = Emotion.Positive; weight = None }))
         actor <! SentimentCommand(Train({ value = negativeText; category = Emotion.Negative; weight = None }))
         actor <! SentimentCommand(Classify({ text = "My brother love fsharp" }))
-        let a = expectMsg tck "a"
+        let a = expectMsg tck ({ text = "My brother love fsharp"; score = ([(Emotion.Negative, 0.0); (Emotion.Positive, 0.05555555556)] |> Map.ofList) })
         ()
 
         //Assert.True((result.score.TryFind(Emotion.Positive).Value) > (result.score.TryFind(Emotion.Negative).Value))
