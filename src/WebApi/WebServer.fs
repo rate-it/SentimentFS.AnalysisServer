@@ -1,8 +1,6 @@
 namespace SentimentFS.AnalysisServer.WebApi
 
 open Microsoft.Extensions.Configuration
-open Tweets
-open Analysis
 module WebServer =
 
     open SentimentApi
@@ -24,6 +22,4 @@ module WebServer =
         let apiActor = actorSystem.ActorOf(Props.Create<ApiMasterActor>(appconfig, cluster), Actors.apiActor.Name)
         choose [
             sentimentController actorSystem
-            tweetsController actorSystem
-            analysisController actorSystem
         ]

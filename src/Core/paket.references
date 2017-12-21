@@ -1,9 +1,0 @@
-Akka
-Akka.Streams
-FSharp.Core
-SentimentFS.NaiveBayes
-SentimentFS.Stemmer
-Hopac
-CassandraCSharpDriver
-TweetinviAPI
-Akka.Serialization.Hyperion

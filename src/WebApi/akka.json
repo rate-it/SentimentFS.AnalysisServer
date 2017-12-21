@@ -7,6 +7,7 @@
             "serialization-bindings": {
                 "System.Object": "hyperion"
             },
+            "provider": "cluster",
             "deployment": {
                 "/api/analysis": {
                     "router": "round-robin-pool",

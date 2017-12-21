@@ -14,8 +14,6 @@
     <Compile Include="Json.fs" />
     <Compile Include="Storage.fs" />
     <Compile Include="Sentiment.fs" />
-    <Compile Include="Tweets.fs" />
-    <Compile Include="Analysis.fs" />
     <Compile Include="WebServer.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
