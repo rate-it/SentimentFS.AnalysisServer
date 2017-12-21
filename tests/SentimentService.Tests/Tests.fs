@@ -13,6 +13,15 @@ module Tests =
     open Akkling
 
     [<Fact>]
+    let ``Sentiment actor only training``() = testDefault <| fun tck ->
+        let actor = spawn tck "sentiment" (propsPersist (sentimentActor(None)))
+        let positiveText = "I love fsharp"
+        let negativeText = "I hate java"
+        actor <! SentimentCommand(Train({ value = positiveText; category = Emotion.Positive; weight = None }))
+        actor <! SentimentCommand(Train({ value = negativeText; category = Emotion.Negative; weight = None }))
+        expectNoMsg tck
+
+    [<Fact>]
     let ``Sentiment actor positive text`` () = testDefault <| fun tck ->
         let actor = spawn tck "sentiment" (propsPersist (sentimentActor(None)))
         let positiveText = "I love fsharp"
