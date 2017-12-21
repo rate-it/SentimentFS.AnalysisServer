@@ -1,25 +1,26 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
-    <PropertyGroup>
-        <OutputType>Exe</OutputType>
-        <TargetFramework>netcoreapp2.0</TargetFramework>
-    </PropertyGroup>
-    <ItemGroup>
-        <Content Include="*.json">
-            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-        </Content>
-    </ItemGroup>
-    <ItemGroup>
-        <Compile Include="Json.fs" />
-        <Compile Include="Storage.fs" />
-        <Compile Include="Sentiment.fs" />
-        <Compile Include="Tweets.fs" />
-        <Compile Include="Analysis.fs" />
-        <Compile Include="WebServer.fs" />
-        <Compile Include="Program.fs" />
-    </ItemGroup>
-    <ItemGroup>
-        <ProjectReference Include="..\Core\Core.fsproj" />
-    </ItemGroup>
-    <Import Project="..\..\.paket\Paket.Restore.targets" />
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
+  </PropertyGroup>
+  <ItemGroup>
+    <Content Include="*.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Api.fs" />
+    <Compile Include="Json.fs" />
+    <Compile Include="Storage.fs" />
+    <Compile Include="Sentiment.fs" />
+    <Compile Include="Tweets.fs" />
+    <Compile Include="Analysis.fs" />
+    <Compile Include="WebServer.fs" />
+    <Compile Include="Program.fs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Core\Core.fsproj" />
+  </ItemGroup>
+  <Import Project="..\..\.paket\Paket.Restore.targets" />
 </Project>
