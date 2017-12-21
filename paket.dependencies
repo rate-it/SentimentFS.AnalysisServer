@@ -14,8 +14,12 @@ nuget Akka.Remote
 nuget Akka.Logger.Serilog
 nuget Akka.Persistence.Redis
 nuget Akka.Streams
+nuget Akka.Cluster
 nuget Akkling
 nuget Akkling.Persistence
+nuget Akkling.Streams
+nuget Akkling.DistributedData
+nuget Akkling.Cluster.Sharding
 nuget FsPickler 3.4.0
 nuget Newtonsoft.Json
 nuget Akka.Serialization.Hyperion
@@ -25,6 +29,7 @@ nuget Fable.JsonConverter
 
 nuget xunit
 nuget Akka.Streams.TestKit
+nuget Akka.Cluster.TestKit
 nuget xunit.runner.visualstudio
 nuget Akka.TestKit.Xunit2
 nuget Akkling.TestKit
