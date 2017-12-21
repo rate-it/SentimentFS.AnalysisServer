@@ -2,7 +2,7 @@ namespace SentimentFS.AnalysisServer.WebApi.Storage
 
 module Cassandra =
     open Cassandra
-    open SentimentFS.AnalysisServer.Core.Config
+    open SentimentFS.AnalysisServer.Common.Config
 
     let cluster (config: AppConfig) =
         let clusterBuilder =
