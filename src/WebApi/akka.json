@@ -9,15 +9,7 @@
             },
             "provider": "cluster",
             "deployment": {
-                "/api/analysis": {
-                    "router": "round-robin-pool",
-                    "resizer": {
-                        "enabled": "on",
-                        "lower-bound": 5,
-                        "upper-bound": 30
-                    }
-                },
-                "/api/tweets": {
+                "/api": {
                     "router": "round-robin-pool",
                     "resizer": {
                         "enabled": "on",

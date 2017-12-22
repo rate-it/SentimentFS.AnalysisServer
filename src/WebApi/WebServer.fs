@@ -8,6 +8,7 @@ module WebServer =
     open Akka.Configuration
     open Api.Actor
     open SentimentFS.AnalysisServer.WebApi.Storage
+    open SentimentFS.AnalysisServer.Common.Routing
     open System.IO
     open Microsoft.Extensions.Configuration
     open Akka.Routing
@@ -17,7 +18,7 @@ module WebServer =
         let appconfig = AppConfig.Zero()
         config.Bind(appconfig) |> ignore
         let actorSystem = ActorSystem.Create("sentimentfs", akkaConfig)
-        let router = actorSystem.ActorOf(Props.Empty.WithRouter(FromConfig.Instance), "api")
+        let router = actorSystem.ActorOf(Props.Empty.WithRouter(FromConfig.Instance), Actors.api.Name)
         choose [
             sentimentController actorSystem
         ]
