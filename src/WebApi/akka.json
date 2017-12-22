@@ -26,12 +26,11 @@
         },
         "remote": {
             "log-remote-lifecycle-events": "DEBUG",
-            "helios":{
-                "tcp": {
-                    "hostname": "localhost",
-                    "public-hostname": "localhost",
-                    "port": 5001
-                }
+            "helios.tcp": {
+                "hostname": "localhost",
+                "public-hostname": "localhost",
+                "port": 5001
+
             }
         },
         "cluster": {
