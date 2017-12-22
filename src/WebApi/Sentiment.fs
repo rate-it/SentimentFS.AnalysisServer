@@ -3,17 +3,15 @@ namespace SentimentFS.AnalysisServer.WebApi
 module SentimentApi =
     open Akka.Actor
     open Operators
-    open SentimentFS.AnalysisServer.Core.Actor
     open SentimentFS.NaiveBayes.Dto
-    open SentimentFS.AnalysisServer.Core.Sentiment.Messages
-    open SentimentFS.AnalysisServer.Core.Sentiment.Dto
     open JSON
     open Giraffe
     open Giraffe.Tasks
     open Giraffe.HttpHandlers
     open Giraffe.HttpContextExtensions
     open Microsoft.AspNetCore.Http
-
+    open SentimentFS.AnalysisServer.Common.Routing
+    open SentimentFS.AnalysisServer.Common.Messages.Sentiment
 
     let sentimentController (system: ActorSystem) =
         let classifyHandler =

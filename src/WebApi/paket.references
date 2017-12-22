@@ -8,3 +8,4 @@ CassandraCSharpDriver
 Microsoft.AspNetCore.All
 Giraffe
 Fable.JsonConverter
+SentimentFS.NaiveBayes
