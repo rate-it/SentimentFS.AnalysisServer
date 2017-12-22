@@ -15,5 +15,6 @@ module Program =
     let main argv =
         let system = System.create "sentimentfs" <| Configuration.load()
         let actor = ClusterSharding.entityFactoryFor system "sentiment" <| propsPersist (sentimentActor(Some defaultClassificatorConfig))
+        printfn "cluster start"
         Console.ReadKey() |> ignore
         0 // return an integer exit code
