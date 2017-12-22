@@ -32,8 +32,14 @@ module SentimentApi =
                     api.Tell({ value = model.text; category = model.category; weight = match model.weight with weight when weight > 1 -> Some weight | _ -> None })
                     return! customJson settings "" next ctx
                 }
+        let getStateHandler =
+            fun (next : HttpFunc) (ctx : HttpContext) ->
+                task {
+                    return! customJson settings "{dupa: 1}" next ctx
+                }
 
         routeStartsWith  "/api/sentiment" >=> choose [
+            GET >=> route "/api/sentiment/state" >=> getStateHandler
             POST >=> route "/api/sentiment/classification" >=> classifyHandler
             PUT >=> route "/api/sentiment/trainer" >=> trainHandler
         ]
