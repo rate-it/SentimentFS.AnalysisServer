@@ -14,6 +14,6 @@ module Program =
     let main argv =
         let system = System.create "sentimentfs" <| Configuration.load()
         let remoteProps addr actor = { propsPersist actor with Deploy = Some (Deploy(RemoteScope(Address.Parse addr)));}
-        let actor = spawn system "sentiment" <| (remoteProps "akka.tcp://sentimentfs@localhost:4500" (sentimentActor(Some defaultClassificatorConfig)))
-        Console.ReadKey();
+        let actor = spawn system "sentiment" <| (remoteProps "akka.tcp://sentimentfs@localhost:5002" (sentimentActor(Some defaultClassificatorConfig)))
+        Console.ReadKey() |> ignore
         0 // return an integer exit code

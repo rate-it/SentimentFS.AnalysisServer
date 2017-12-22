@@ -36,7 +36,7 @@
                 }
             },
             "cluster": {
-                "seed-nodes": ["akka.tcp://sentimentfs@127.0.0.1:4500"],
+                "seed-nodes": ["akka.tcp://sentimentfs@127.0.0.1:5001"],
                 "roles": ["web"]
             }
         }
