@@ -1,4 +1,5 @@
 namespace SentimentFS.AnalysisServer.WebApi
+open Akka.Cluster.Tools.Singleton
 
 module WebServer =
     open SentimentFS.AnalysisServer.Common.Config
@@ -17,7 +18,7 @@ module WebServer =
         let akkaConfig = ConfigurationFactory.ParseString(File.ReadAllText("./akka.json"))
         let appconfig = AppConfig.Zero()
         config.Bind(appconfig) |> ignore
-        let actorSystem = ActorSystem.Create("sentimentfs", akkaConfig)
+        let actorSystem = ActorSystem.Create("sentimentfs", akkaConfig.WithFallback(ClusterSingletonManager.DefaultConfig()))
         let router = actorSystem.ActorOf(Props.Empty.WithRouter(FromConfig.Instance), Actors.router.Name)
         choose [
             sentimentController actorSystem
