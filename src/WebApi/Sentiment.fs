@@ -3,7 +3,6 @@ namespace SentimentFS.AnalysisServer.WebApi
 module SentimentApi =
     open Akka.Actor
     open Operators
-    open SentimentFS.NaiveBayes.Dto
     open JSON
     open Giraffe
     open Giraffe.Tasks
@@ -13,21 +12,24 @@ module SentimentApi =
     open SentimentFS.AnalysisServer.Common.Routing
     open SentimentFS.AnalysisServer.Common.Messages.Sentiment
 
+    [<CLIMutable>]
+    type TrainRequest = { text: string; category: Emotion; weight : int }
+
     let sentimentController (system: ActorSystem) =
         let classifyHandler =
             fun (next : HttpFunc) (ctx : HttpContext) ->
                 task {
                     let! model = ctx.BindModelAsync<Classify>()
-                    let api = system.ActorSelection(Actors.apiActor.Path)
-                    let! result= api.Ask<ClassificationScore<Emotion>>(model)
+                    let api = system.ActorSelection(Actors.api.Path)
+                    let! result= api.Ask<ClassifyResult>(model)
                     return! customJson settings result next ctx
                 }
         let trainHandler =
             fun (next : HttpFunc) (ctx : HttpContext) ->
                 task {
-                    let! model = ctx.BindModelAsync<TrainingQuery<Emotion>>()
-                    let api = system.ActorSelection(Actors.apiActor.Path)
-                    api.Tell({ trainQuery =  { value = model.value; category = model.category; weight = match model.weight with weight when weight > 1 -> Some weight | _ -> None } })
+                    let! model = ctx.BindModelAsync<TrainRequest>()
+                    let api = system.ActorSelection(Actors.api.Path)
+                    api.Tell({ value = model.text; category = model.category; weight = match model.weight with weight when weight > 1 -> Some weight | _ -> None })
                     return! customJson settings "" next ctx
                 }
 
