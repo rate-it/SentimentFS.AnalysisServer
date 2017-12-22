@@ -7,7 +7,7 @@
             "serialization-bindings": {
                 "System.Object": "hyperion"
             },
-            "provider": "cluster",
+            "provider": "Akka.Cluster.ClusterActorRefProvider, Akka.Cluster",
             "deployment": {
                 "/apirouter": {
                     "router": "consistent-hashing-group",
