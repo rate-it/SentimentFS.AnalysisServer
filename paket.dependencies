@@ -1,4 +1,4 @@
-framework: auto-detect
+framework: netcoreapp2.0,netstandard2.0,net461
 source https://www.myget.org/F/machine-learning/api/v3/index.json
 source https://api.nuget.org/v3/index.json
 source https://www.myget.org/F/sentimentfs/api/v2
