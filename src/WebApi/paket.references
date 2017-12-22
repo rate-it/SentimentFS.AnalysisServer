@@ -1,6 +1,7 @@
 FSharp.Core
 Akka
 Akka.Cluster
+Akka.Cluster.Tools
 Newtonsoft.Json
 Microsoft.DotNet.Watcher.Tools
 TweetinviAPI

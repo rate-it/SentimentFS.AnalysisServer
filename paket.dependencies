@@ -15,6 +15,7 @@ nuget Akka.Logger.Serilog
 nuget Akka.Persistence.Redis
 nuget Akka.Streams
 nuget Akka.Cluster
+nuget Akka.Cluster.Tools
 nuget Akkling
 nuget Akkling.Persistence
 nuget Akkling.Streams
