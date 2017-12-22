@@ -18,7 +18,7 @@ module WebServer =
         let appconfig = AppConfig.Zero()
         config.Bind(appconfig) |> ignore
         let actorSystem = ActorSystem.Create("sentimentfs", akkaConfig)
-        let router = actorSystem.ActorOf(Props.Empty.WithRouter(FromConfig.Instance), Actors.api.Name)
+        let router = actorSystem.ActorOf(Props.Empty.WithRouter(FromConfig.Instance), Actors.router.Name)
         choose [
             sentimentController actorSystem
         ]
