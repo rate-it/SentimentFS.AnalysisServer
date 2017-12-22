@@ -13,4 +13,5 @@ module ActorMetaData  =
 module Actors =
     open ActorMetaData
 
+    let router = create("apirouter", None)
     let api = create("api", None)

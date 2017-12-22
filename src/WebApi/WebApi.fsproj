@@ -10,7 +10,7 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Api.fs" />
+    <Compile Include="ApiMaster.fs" />
     <Compile Include="Json.fs" />
     <Compile Include="Storage.fs" />
     <Compile Include="Sentiment.fs" />
