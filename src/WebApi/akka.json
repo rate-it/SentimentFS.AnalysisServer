@@ -36,7 +36,8 @@
         },
         "cluster": {
             "seed-nodes": ["akka.tcp://sentimentfs@localhost:5001"],
-            "auto-down-unreachable-after": "5s"
+            "auto-down-unreachable-after": "5s",
+            "roles": ["webapi"]
         }
     }
 }
