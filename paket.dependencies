@@ -1,4 +1,4 @@
-framework: auto-detect
+framework: netcoreapp2.0,netstandard2.0,net461
 source https://www.myget.org/F/machine-learning/api/v3/index.json
 source https://api.nuget.org/v3/index.json
 source https://www.myget.org/F/sentimentfs/api/v2
@@ -14,21 +14,29 @@ nuget Akka.Remote
 nuget Akka.Logger.Serilog
 nuget Akka.Persistence.Redis
 nuget Akka.Streams
-nuget Akka.Streams.TestKit
+nuget Akka.Cluster
+nuget Akka.Cluster.Tools
 nuget Akkling
 nuget Akkling.Persistence
-nuget Akkling.TestKit
+nuget Akkling.Streams
+nuget Akkling.DistributedData
+nuget Akkling.Cluster.Sharding
 nuget FsPickler 3.4.0
 nuget Newtonsoft.Json
-nuget Microsoft.NET.Test.Sdk
 nuget Akka.Serialization.Hyperion
-nuget xunit
-nuget xunit.runner.visualstudio
-nuget Akka.TestKit.Xunit2
 nuget Giraffe
 nuget Microsoft.AspNetCore.All
 nuget Fable.JsonConverter
+
+nuget xunit
+nuget FsUnit.xUnit >= 3.1.0-beta2
+nuget Akka.Streams.TestKit
+nuget Akka.Cluster.TestKit
+nuget xunit.runner.visualstudio
+nuget Akka.TestKit.Xunit2
+nuget Akkling.TestKit
 nuget Expecto
 nuget YoloDev.Expecto.TestSdk
+nuget Microsoft.NET.Test.Sdk
 clitool Microsoft.DotNet.Watcher.Tools
 clitool dotnet-xunit

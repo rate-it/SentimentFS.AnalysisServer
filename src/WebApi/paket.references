@@ -1,5 +1,7 @@
 FSharp.Core
 Akka
+Akka.Cluster
+Akka.Cluster.Tools
 Newtonsoft.Json
 Microsoft.DotNet.Watcher.Tools
 TweetinviAPI
@@ -7,3 +9,4 @@ CassandraCSharpDriver
 Microsoft.AspNetCore.All
 Giraffe
 Fable.JsonConverter
+Akka.Serialization.Hyperion

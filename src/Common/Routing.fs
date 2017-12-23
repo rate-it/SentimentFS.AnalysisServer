@@ -1,4 +1,4 @@
-namespace SentimentFS.AnalysisServer.Core.Actor
+namespace SentimentFS.AnalysisServer.Common.Routing
 
 type ActorMetaData  = { Name: string; Parent: ActorMetaData option; Path: string }
 
@@ -9,11 +9,9 @@ module ActorMetaData  =
                          | None -> "/user"
         { Name = name; Parent = parent; Path = (sprintf "%s/%s" parentPath name) }
 
+
 module Actors =
     open ActorMetaData
-    let apiActor = create("api", None)
-    let analysisActor = create("analysis", Some apiActor)
-    let sentimentActor = create("sentiment", Some apiActor)
-    let tweetsMaster = create("tweets", Some apiActor)
-    let twitterApiActor = create("twitter-api", Some tweetsMaster)
-    let tweetStorageActor = create("storage", Some tweetsMaster)
+
+    let router = create("apirouter", None)
+    let api = create("api", None)

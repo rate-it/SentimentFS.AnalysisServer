@@ -1,4 +1,5 @@
 namespace SentimentFS.AnalysisServer.SentimentService
+open FsUnit.Xunit
 
 module Tests =
 
@@ -7,35 +8,59 @@ module Tests =
     open Akkling.TestKit
     open Akka.TestKit.Xunit2
     open SentimentFS.NaiveBayes.Dto
-    open SentimentFS.AnalysisServer.SentimentService.Messages
+    open SentimentFS.AnalysisServer.Common.Messages.Sentiment
     open SentimentFS.AnalysisServer.SentimentService.Actor
     open Akkling.Persistence.Props
     open Akkling
-    open Akkling.Behaviors
 
     [<Fact>]
-    let ``My test`` () =
-        Assert.True(true)
+    let ``Sentiment actor only training``() = testDefault <| fun tck ->
+        let actor = spawn tck "sentiment" (propsPersist (sentimentActor(None)))
+        let positiveText = "I love fsharp"
+        let negativeText = "I hate java"
+        actor <! SentimentCommand(Train({ value = positiveText; category = Emotion.Positive; weight = None }))
+        actor <! SentimentCommand(Train({ value = negativeText; category = Emotion.Negative; weight = None }))
+        expectNoMsg tck
 
     [<Fact>]
     let ``Sentiment actor positive text`` () = testDefault <| fun tck ->
         let actor = spawn tck "sentiment" (propsPersist (sentimentActor(None)))
         let positiveText = "I love fsharp"
         let negativeText = "I hate java"
-        actor <! SentimentCommand(Train({ trainQuery =  { value = positiveText; category = Emotion.Positive; weight = None } }))
-        actor <! SentimentCommand(Train({ trainQuery =  { value = negativeText; category = Emotion.Negative; weight = None } }))
+        actor <! SentimentCommand(Train({ value = positiveText; category = Emotion.Positive; weight = None }))
+        actor <! SentimentCommand(Train({ value = negativeText; category = Emotion.Negative; weight = None }))
         actor <! SentimentCommand(Classify({ text = "My brother love fsharp" }))
-        let a = expectMsg tck "a"
-        ()
+        let result = tck.ExpectMsg<ClassifyResult>()
+        result.score.TryFind(Emotion.Positive).Value |> should be (greaterThan (result.score.TryFind(Emotion.Negative).Value))
 
-        //Assert.True((result.score.TryFind(Emotion.Positive).Value) > (result.score.TryFind(Emotion.Negative).Value))
-        // [<Fact>]
-        // let ``Sentiment actor positive text`` () =
-        //     let positiveText = "I love fsharp"
-        //     let negativeText = "I hate java"
-        //     let actor = this.Sys.ActorOf(Props.Create<SentimentActor>(None))
-        //     actor.Tell({ trainQuery =  { value = positiveText; category = Emotion.Positive; weight = None } })
-        //     actor.Tell({ trainQuery =  { value = negativeText; category = Emotion.Negative; weight = None } })
-        //     actor.Tell({ text = "My brother hate java" })
-        //     let result = this.ExpectMsg<ClassificationScore<Emotion>>()
-        //     Assert.True((result.score.TryFind(Emotion.Negative).Value) > (result.score.TryFind(Emotion.Positive).Value))
+    [<Fact>]
+    let ``Sentiment actor negative text`` () = testDefault <| fun tck ->
+        let actor = spawn tck "sentiment" (propsPersist (sentimentActor(None)))
+        let positiveText = "I love fsharp"
+        let negativeText = "I hate java"
+        actor <! SentimentCommand(Train({ value = positiveText; category = Emotion.Positive; weight = None }))
+        actor <! SentimentCommand(Train({ value = negativeText; category = Emotion.Negative; weight = None }))
+        actor <! SentimentCommand(Classify({ text = "My brother hate java" }))
+        let result = tck.ExpectMsg<ClassifyResult>()
+        result.score.TryFind(Emotion.Negative).Value |> should be (greaterThan (result.score.TryFind(Emotion.Positive).Value))
+
+    [<Fact>]
+    let ``Get state when actor has no any training`` () = testDefault <| fun tck ->
+        let actor = spawn tck "sentiment" (propsPersist (sentimentActor(None)))
+        actor <! SentimentCommand(GetState)
+        let result = tck.ExpectMsg<ClassificatorState>()
+        result.categories.IsEmpty |> should be True
+
+
+    [<Fact>]
+    let ``Get state when actor  training`` () = testDefault <| fun tck ->
+        let actor = spawn tck "sentiment" (propsPersist (sentimentActor(None)))
+        let positiveText = "I love fsharp"
+        let negativeText = "I hate java"
+        actor <! SentimentCommand(Train({ value = positiveText; category = Emotion.Positive; weight = None }))
+        actor <! SentimentCommand(Train({ value = negativeText; category = Emotion.Negative; weight = None }))
+        actor <! SentimentCommand(GetState)
+        let result = tck.ExpectMsg<ClassificatorState>()
+        result.categories.IsEmpty |> should be False
+        result.categories.ContainsKey(Emotion.Positive) |> should be True
+        result.categories.ContainsKey(Emotion.Negative) |> should be True

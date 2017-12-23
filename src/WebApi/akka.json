@@ -7,24 +7,36 @@
             "serialization-bindings": {
                 "System.Object": "hyperion"
             },
+            "provider": "Akka.Cluster.ClusterActorRefProvider, Akka.Cluster",
             "deployment": {
-                "/api/analysis": {
-                    "router": "round-robin-pool",
-                    "resizer": {
+                "/apirouter": {
+                    "router": "consistent-hashing-group",
+                    "routees": {
+                        "paths": ["/user/api"]
+                    },
+                    "virtual-nodes-factor": 8,
+                    "cluster": {
                         "enabled": "on",
-                        "lower-bound": 5,
-                        "upper-bound": 30
-                    }
-                },
-                "/api/tweets": {
-                    "router": "round-robin-pool",
-                    "resizer": {
-                        "enabled": "on",
-                        "lower-bound": 5,
-                        "upper-bound": 30
+                        "max-nr-of-instances-per-node": 2,
+                        "allow-local-routees": "off",
+                        "use-role": "tracker"
                     }
                 }
             }
+        },
+        "remote": {
+            "log-remote-lifecycle-events": "DEBUG",
+            "helios": {
+                "tcp": {
+                    "hostname": "localhost",
+                    "public-hostname": "localhost",
+                    "port": 5001
+                }
+            }
+        },
+        "cluster": {
+            "seed-nodes": ["akka.tcp://sentimentfs@localhost:5001"],
+            "auto-down-unreachable-after": "5s"
         }
     }
 }

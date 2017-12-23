@@ -3,7 +3,6 @@
 open Akka.Actor
 open Akka.Configuration
 open SentimentFS.AnalysisServer.WebApi.Storage
-open SentimentFS.AnalysisServer.Core.Actor
 open System
 open System.IO
 open System.Collections.Generic
@@ -19,8 +18,6 @@ open Giraffe.Middleware
 
 module Program =
     open System.IO
-    open SentimentFS.AnalysisServer.Core.Config
-    open SentimentFS.AnalysisServer.Core.Api
     open Microsoft.Extensions.Configuration
     open Microsoft.Extensions.Configuration
 
