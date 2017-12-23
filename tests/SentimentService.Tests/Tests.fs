@@ -1,4 +1,5 @@
 namespace SentimentFS.AnalysisServer.SentimentService
+open FsUnit.Xunit
 
 module Tests =
 
@@ -30,7 +31,7 @@ module Tests =
         actor <! SentimentCommand(Train({ value = negativeText; category = Emotion.Negative; weight = None }))
         actor <! SentimentCommand(Classify({ text = "My brother love fsharp" }))
         let result = tck.ExpectMsg<ClassifyResult>()
-        Assert.True((result.score.TryFind(Emotion.Positive).Value) > (result.score.TryFind(Emotion.Negative).Value))
+        result.score.TryFind(Emotion.Positive).Value |> should be (greaterThan (result.score.TryFind(Emotion.Negative).Value))
 
     [<Fact>]
     let ``Sentiment actor negative text`` () = testDefault <| fun tck ->
@@ -41,14 +42,14 @@ module Tests =
         actor <! SentimentCommand(Train({ value = negativeText; category = Emotion.Negative; weight = None }))
         actor <! SentimentCommand(Classify({ text = "My brother hate java" }))
         let result = tck.ExpectMsg<ClassifyResult>()
-        Assert.True((result.score.TryFind(Emotion.Negative).Value) > (result.score.TryFind(Emotion.Positive).Value))
+        result.score.TryFind(Emotion.Negative).Value |> should be (greaterThan (result.score.TryFind(Emotion.Positive).Value))
 
     [<Fact>]
     let ``Get state when actor has no any training`` () = testDefault <| fun tck ->
         let actor = spawn tck "sentiment" (propsPersist (sentimentActor(None)))
         actor <! SentimentCommand(GetState)
         let result = tck.ExpectMsg<ClassificatorState>()
-        Assert.True(result.categories.IsEmpty)
+        result.categories.IsEmpty |> should be True
 
 
     [<Fact>]
@@ -60,6 +61,6 @@ module Tests =
         actor <! SentimentCommand(Train({ value = negativeText; category = Emotion.Negative; weight = None }))
         actor <! SentimentCommand(GetState)
         let result = tck.ExpectMsg<ClassificatorState>()
-        Assert.False(result.categories.IsEmpty)
-        Assert.True(result.categories.ContainsKey(Emotion.Positive))
-        Assert.True(result.categories.ContainsKey(Emotion.Negative))
+        result.categories.IsEmpty |> should be False
+        result.categories.ContainsKey(Emotion.Positive) |> should be True
+        result.categories.ContainsKey(Emotion.Negative) |> should be True
