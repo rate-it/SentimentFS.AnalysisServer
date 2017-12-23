@@ -18,6 +18,7 @@ module Sentiment =
     type SentimentActorCommand =
         | Train of Train
         | Classify of Classify
+        | GetState
 
     type SentimentMessage =
         | TrainEvent of Train
@@ -25,3 +26,7 @@ module Sentiment =
 
     [<CLIMutable>]
     type ClassifyResult = { text: string; score: Map<Emotion, float> }
+
+
+    [<CLIMutable>]
+    type ClassificatorState = { categories: Map<Emotion, Map<string, int>> }

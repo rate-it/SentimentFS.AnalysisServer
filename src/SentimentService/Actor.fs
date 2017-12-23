@@ -39,7 +39,7 @@ module Actor =
       you'll you're you've your yours yourself yourselves""" |> Tokenizer.wordsSequence |> Seq.toList
 
     let defaultClassificatorConfig: Config = { model = Naive; defaultWeight = 1; stem = stem; stopWords = stopWords }
-
+    // categories: Map<Emotion, Map<string, int>>
     let sentimentActor config (mailbox: Actor<SentimentMessage>) =
         let rec loop (state) =
             actor {
@@ -55,6 +55,13 @@ module Actor =
                         let result = (state |> Classifier.classify(query.text))
                         mailbox.Sender() <! { text = query.text; score = result.score }
                         return! loop state
-
+                    | GetState ->
+                        let struct (stateopt, _ ) = state
+                        match stateopt with
+                        | Some s ->
+                            mailbox.Sender() <! { categories = (s.categories |> Map.toList |> List.map(fun (s, x) -> (s, x.tokens)) |> Map.ofList)  }
+                        | None ->
+                            mailbox.Sender() <! { categories = ([] |> Map.ofList) }
+                        return! loop state
             }
         loop (Trainer.init(config))
