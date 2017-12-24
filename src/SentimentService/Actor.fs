@@ -44,6 +44,7 @@ module Actor =
         let rec loop (state) =
             actor {
                 let! msg = mailbox.Receive()
+                printfn "%A" msg
                 match msg with
                 | TrainEvent trainMessage ->
                     return! loop (state |> Trainer.train({ value = trainMessage.value; category = trainMessage.category; weight = trainMessage.weight }))
