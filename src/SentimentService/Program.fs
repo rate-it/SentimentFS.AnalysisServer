@@ -16,7 +16,8 @@ module Program =
     [<EntryPoint>]
     let main argv =
         let system = System.create "sentimentfs" <| (Configuration.load())
-        let actor = spawn system "classifier" <| propsPersist (sentimentActor(Some defaultClassificatorConfig))
+        let behavior (ctx : Actor<_>) msg = printfn "%A received %s" (ctx.Self.Path.ToStringWithAddress()) msg |> ignored
+        let actor = spawn system "classifier" <| props (actorOf2 behavior)
         printfn "%A" actor.Path
         printfn "Cluster Node Address %A" ((system :?> ExtendedActorSystem).Provider.DefaultAddress)
         Console.ReadKey() |> ignore
