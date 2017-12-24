@@ -8,6 +8,7 @@ open Akkling
 open System
 open Akkling.Cluster.Sharding
 open Akka.Cluster.Tools.Singleton
+open System.Threading
 
 module Program =
     open Akka.Actor
@@ -15,7 +16,7 @@ module Program =
     [<EntryPoint>]
     let main argv =
         let system = System.create "sentimentfs" <| (Configuration.load().WithFallback(ClusterSingletonManager.DefaultConfig()))
-        let actor = spawn system "classifier" <| propsPersist (sentimentActor(Some defaultClassificatorConfig))
-        printfn "cluster start"
+        let actor = spawn system "api" <| propsPersist (sentimentActor(Some defaultClassificatorConfig))
+        printfn "Cluster Node Address %A" ((system :?> ExtendedActorSystem).Provider.DefaultAddress)
         Console.ReadKey() |> ignore
         0 // return an integer exit code
