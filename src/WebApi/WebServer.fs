@@ -28,19 +28,6 @@ module WebServer =
         let actorSystem = ActorSystem.Create("sentimentfs", akkaConfig)
         printfn "Cluster Node Address %A" ((actorSystem :?> ExtendedActorSystem).Provider.DefaultAddress)
         let router = actorSystem.ActorOf(Props.Empty.WithRouter(FromConfig.Instance), Actors.router.Name)
-
-        let classifyHandler =
-            fun (next : HttpFunc) (ctx : HttpContext) ->
-                task {
-                    printfn "Witam"
-                    router.Tell(SentimentCommand(Train({ value = "a"; category = Emotion.Positive; weight = None })))
-                    router.Tell("Dupa")
-                    let! b = router.Ask<ClassifyResult>(SentimentCommand(Classify({ text = "My brother love fsharp" })))
-                    printfn "%A" b
-                    Thread.Sleep(1000)
-                    return! customJson JSON.settings "result" next ctx
-                }
         choose [
-            route "/test" >=> classifyHandler
             sentimentController actorSystem
         ]

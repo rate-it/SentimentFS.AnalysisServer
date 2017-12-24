@@ -25,13 +25,12 @@
                         "enabled": "on",
                         "max-nr-of-instances-per-node": 2,
                         "allow-local-routees": "on",
-                        "use-role": "webapi"
+                        "use-role": "classifier"
                     }
                 }
             }
         },
         "remote": {
-            "log-remote-lifecycle-events": "DEBUG",
             "helios": {
                 "tcp": {
                     "hostname": "localhost",

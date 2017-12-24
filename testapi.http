@@ -4,7 +4,7 @@ Host: localhost:5000
 Content-Type: application/json
 Cache-Control: no-cache
 
-{ "value": "test", "category": -2, "weight" : 1 }
+{ "text": "test", "category": -2, "weight" : 1 }
 
 POST /api/sentiment/classification HTTP/1.1
 Host: localhost:5000
