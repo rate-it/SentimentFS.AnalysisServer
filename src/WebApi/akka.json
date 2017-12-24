@@ -1,8 +1,5 @@
 {
     "akka": {
-        "loglevel": "DEBUG",
-        "stdout-loglevel": "DEBUG",
-        "log-config-on-start" : "on",
         "actor": {
             "debug" : {
                 "unhandled": "on"
