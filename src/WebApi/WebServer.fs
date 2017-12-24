@@ -34,6 +34,7 @@ module WebServer =
                 task {
                     printfn "Witam"
                     router.Tell(SentimentCommand(Train({ value = "a"; category = Emotion.Positive; weight = None })))
+                    router.Tell("Dupa")
                     let! b = router.Ask<ClassifyResult>(SentimentCommand(Classify({ text = "My brother love fsharp" })))
                     printfn "%A" b
                     Thread.Sleep(1000)

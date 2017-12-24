@@ -16,7 +16,7 @@
             "provider": "Akka.Cluster.ClusterActorRefProvider, Akka.Cluster",
             "deployment": {
                 "/apirouter": {
-                    "router": "consistent-hashing-group",
+                    "router": "round-robin-group",
                     "routees": {
                         "paths": ["/user/classifier"]
                     },
@@ -24,7 +24,7 @@
                     "cluster": {
                         "enabled": "on",
                         "max-nr-of-instances-per-node": 2,
-                        "allow-local-routees": "off",
+                        "allow-local-routees": "on",
                         "use-role": "webapi"
                     }
                 }
