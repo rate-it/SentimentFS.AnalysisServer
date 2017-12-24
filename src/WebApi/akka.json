@@ -1,6 +1,12 @@
 {
     "akka": {
+        "loglevel": "DEBUG",
+        "stdout-loglevel": "DEBUG",
+        "log-config-on-start" : "on",
         "actor": {
+            "debug" : {
+                "unhandled": "on"
+            },
             "serializers": {
                 "hyperion": "Akka.Serialization.HyperionSerializer, Akka.Serialization.Hyperion"
             },
@@ -10,7 +16,7 @@
             "provider": "Akka.Cluster.ClusterActorRefProvider, Akka.Cluster",
             "deployment": {
                 "/apirouter": {
-                    "router": "round-robin-group",
+                    "router": "consistent-hashing-group",
                     "routees": {
                         "paths": ["/user/classifier"]
                     },
