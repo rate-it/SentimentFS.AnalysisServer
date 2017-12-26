@@ -44,7 +44,6 @@ module Actor =
         let rec loop (state) =
             actor {
                 let! msg = mailbox.Receive()
-                printfn "%A" msg
                 match msg with
                 | TrainEvent trainMessage ->
                     return! loop (state |> Trainer.train({ value = trainMessage.value; category = trainMessage.category; weight = trainMessage.weight }))
@@ -57,11 +56,10 @@ module Actor =
                         mailbox.Sender() <! { text = query.text; score = result.score }
                         return! loop state
                     | GetState ->
-                        let struct (stateopt, _ ) = state
-                        match stateopt with
-                        | Some s ->
+                        match state with
+                        | struct (Some s, _) ->
                             mailbox.Sender() <! { categories = (s.categories |> Map.toList |> List.map(fun (s, x) -> (s, x.tokens)) |> Map.ofList)  }
-                        | None ->
+                        | _ ->
                             mailbox.Sender() <! { categories = ([] |> Map.ofList) }
                         return! loop state
             }
