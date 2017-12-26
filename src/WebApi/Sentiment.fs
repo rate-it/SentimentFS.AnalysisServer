@@ -36,7 +36,9 @@ module SentimentApi =
         let getStateHandler =
             fun (next : HttpFunc) (ctx : HttpContext) ->
                 task {
-                    return! customJson settings "{dupa: 1}" next ctx
+                    let api = system.ActorSelection(Actors.router.Path)
+                    let! result = api.Ask<ClassificatorState>(SentimentCommand(GetState))
+                    return! customJson settings result next ctx
                 }
 
         routeStartsWith  "/api/sentiment" >=> choose [

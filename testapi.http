@@ -15,6 +15,11 @@ Cache-Control: no-cache
 	"text":"My brother hate java"
 }
 
+GET /api/sentiment/state HTTP/1.1
+Host: localhost:5000
+Content-Type: application/json
+Cache-Control: no-cache
+
 GET /api/tweets/key/fsharp HTTP/1.1
 Host: localhost:5000
 Content-Type: application/json
