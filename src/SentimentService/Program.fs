@@ -9,15 +9,14 @@ open System
 open Akkling.Cluster.Sharding
 open Akka.Cluster.Tools.Singleton
 open System.Threading
-
+open SentimentFS.AnalysisServer.Common.Messages.Sentiment
 module Program =
     open Akka.Actor
 
     [<EntryPoint>]
     let main argv =
         let system = System.create "sentimentfs" <| (Configuration.load())
-        let behavior (ctx : Actor<_>) msg = printfn "%A received %s" (ctx.Self.Path.ToStringWithAddress()) msg |> ignored
-        let actor = spawn system "classifier" <| props (actorOf2 behavior)
+        let actor = spawn system "classifier" <| propsPersist (sentimentActor(Some defaultClassificatorConfig))
         printfn "%A" actor.Path
         printfn "Cluster Node Address %A" ((system :?> ExtendedActorSystem).Provider.DefaultAddress)
         Console.ReadKey() |> ignore

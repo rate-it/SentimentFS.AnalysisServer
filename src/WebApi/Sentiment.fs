@@ -20,8 +20,8 @@ module SentimentApi =
             fun (next : HttpFunc) (ctx : HttpContext) ->
                 task {
                     let! model = ctx.BindModelAsync<Classify>()
-                    let api = system.ActorSelection(Actors.api.Path)
-                    let! result= api.Ask<ClassifyResult>(model)
+                    let api = system.ActorSelection(Actors.router.Path)
+                    let! result= api.Ask<ClassifyResult>(SentimentCommand(Classify(model)))
                     return! customJson settings result next ctx
                 }
         let trainHandler =
@@ -30,7 +30,7 @@ module SentimentApi =
                     let! model = ctx.BindModelAsync<TrainRequest>()
                     printfn "%A" model
                     let api = system.ActorSelection(Actors.router.Path)
-                    api.Tell({ value = model.text; category = model.category; weight = match model.weight with weight when weight > 1 -> Some weight | _ -> None })
+                    api.Tell(SentimentCommand(Train({ value = model.text; category = model.category; weight = match model.weight with weight when weight > 1 -> Some weight | _ -> None  })))
                     return! customJson settings "" next ctx
                 }
         let getStateHandler =
