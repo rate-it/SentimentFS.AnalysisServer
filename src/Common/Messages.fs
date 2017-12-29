@@ -1,4 +1,5 @@
 namespace SentimentFS.AnalysisServer.Common.Messages
+open System
 
 module Sentiment =
 
@@ -30,3 +31,22 @@ module Sentiment =
 
     [<CLIMutable>]
     type ClassificatorState = { categories: Map<Emotion, Map<string, int>> }
+open Sentiment
+
+
+module Twitter =
+
+    type Tweet = { IdStr: string
+                   Text: string
+                   Key: string
+                   Date: DateTime
+                   Lang: string
+                   Longitude: double
+                   Latitude: double
+                   Sentiment: Emotion }
+
+    type TweetsMessage =
+        | Create of int list
+        | Add of int
+
+
