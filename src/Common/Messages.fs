@@ -25,28 +25,25 @@ module Sentiment =
         | TrainEvent of Train
         | SentimentCommand of SentimentActorCommand
 
-    [<CLIMutable>]
     type ClassifyResult = { text: string; score: Map<Emotion, float> }
 
-
-    [<CLIMutable>]
     type ClassificatorState = { categories: Map<Emotion, Map<string, int>> }
-open Sentiment
 
 
 module Twitter =
+    open Sentiment
 
     type Tweet = { IdStr: string
                    Text: string
-                   Key: string
-                   Date: DateTime
-                   Lang: string
+                   HashTags: string seq
+                   CreationDate: DateTime
+                   Language: string
                    Longitude: double
                    Latitude: double
                    Sentiment: Emotion }
 
     type TweetsMessage =
-        | Create of int list
-        | Add of int
+        | Insert of Tweet seq
+        | Add of Tweet
 
 
