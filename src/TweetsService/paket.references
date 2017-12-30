@@ -10,5 +10,4 @@ Akkling.Persistence
 Akkling.Cluster.Sharding
 Akkling.Streams
 FsPickler
-SentimentFS.NaiveBayes
-SentimentFS.Stemmer
+TweetinviAPI
