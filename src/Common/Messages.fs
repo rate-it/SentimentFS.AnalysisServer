@@ -43,7 +43,7 @@ module Twitter =
                    Sentiment: Emotion }
 
     type TweetsMessage =
-        | Insert of Tweet seq
+        | Init of tweets: Tweet seq * key: string
         | Add of Tweet
 
 
