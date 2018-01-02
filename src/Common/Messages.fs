@@ -42,8 +42,10 @@ module Twitter =
                    Latitude: double
                    Sentiment: Emotion }
 
+    type Tweets = { tweets: Tweet seq }
+
     type TweetsMessage =
-        | Init of tweets: Tweet seq * key: string
+        | Init of tweets: Tweet seq
         | Add of Tweet
 
 
