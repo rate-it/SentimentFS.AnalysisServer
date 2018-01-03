@@ -1,12 +1,13 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;net461</TargetFrameworks>
-  </PropertyGroup>
-  <ItemGroup>
-    <Compile Include="Config.fs" />
-    <Compile Include="Messages.fs" />
-    <Compile Include="Routing.fs" />
-  </ItemGroup>
-  <Import Project="..\..\.paket\Paket.Restore.targets" />
+    <PropertyGroup>
+        <TargetFrameworks>netstandard2.0;net461</TargetFrameworks>
+    </PropertyGroup>
+    <ItemGroup>
+        <Compile Include="Config.fs" />
+        <Compile Include="Dto.fs" />
+        <Compile Include="Messages.fs" />
+        <Compile Include="Routing.fs" />
+    </ItemGroup>
+    <Import Project="..\..\.paket\Paket.Restore.targets" />
 </Project>
