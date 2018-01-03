@@ -2,12 +2,13 @@ namespace SentimentFS.AnalysisServer
 
 open Common.Messages.Twitter
 open Akka.Streams.Dsl
+open Common.Dto.TwitterApi
 open Akkling.Streams
 open Akka
 
 module TwitterApi =
 
-    let downloadTweetFlow (credentials: TwitterCredentials)= id
+    let downloadTweetFlow (credentials: TwitterCredentials) = id
 
 module Actor =
     open Akkling
