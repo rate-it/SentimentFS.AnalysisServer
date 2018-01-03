@@ -29,6 +29,8 @@ module Sentiment =
 
     type ClassificatorState = { categories: Map<Emotion, Map<string, int>> }
 
+module TwitterApi =
+    type GetTweets = { key: string }
 
 module Twitter =
     open Sentiment
@@ -43,6 +45,10 @@ module Twitter =
                    Sentiment: Emotion }
 
     type Tweets = { tweets: Tweet seq }
+
+    type TweetsCommands =
+        | Add of Tweet
+        | GetByKey of string
 
     type TweetsMessage =
         | Init of tweets: Tweet seq
