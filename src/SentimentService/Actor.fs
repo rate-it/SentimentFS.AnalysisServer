@@ -15,15 +15,6 @@ module Actor =
     open Newtonsoft.Json
     open System.Collections.Generic
 
-    let private intToEmotion (value: int): Emotion =
-        match value with
-        | -5 | -4 -> Emotion.VeryNegative
-        | -3 | -2 | -1 -> Emotion.Negative
-        | 0 -> Emotion.Neutral
-        | 1 | 2 | 3 -> Emotion.Positive
-        | 4 | 5 -> Emotion.VeryPositive
-        | _ -> Emotion.Neutral
-
     let stopWords = """a about above after again against all am an and any are aren't as at be
       because been before being below between both but by can't cannot could
       couldn't did didn't do does doesn't doing don't down during each few for from
