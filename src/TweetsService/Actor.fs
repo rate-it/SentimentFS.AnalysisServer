@@ -1,7 +1,6 @@
 namespace SentimentFS.AnalysisServer
 
 open Common.Messages.Twitter
-open Common.Dto.TwitterApi
 open Akka.Streams.Dsl
 open Akkling.Streams
 open Akka
