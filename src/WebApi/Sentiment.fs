@@ -21,7 +21,7 @@ module SentimentApi =
                 task {
                     let! model = ctx.BindModelAsync<Classify>()
                     let api = system.ActorSelection(Actors.router.Path)
-                    let! result= api.Ask<ClassifyResult>(SentimentCommand(Classify(model)))
+                    let! result= api.Ask<ClassificationResult>(SentimentCommand(Classify(model)))
                     return! customJson settings result next ctx
                 }
         let trainHandler =

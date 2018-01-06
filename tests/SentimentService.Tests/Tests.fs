@@ -30,7 +30,7 @@ module Tests =
         actor <! SentimentCommand(Train({ value = positiveText; category = Emotion.Positive; weight = None }))
         actor <! SentimentCommand(Train({ value = negativeText; category = Emotion.Negative; weight = None }))
         actor <! SentimentCommand(Classify({ text = "My brother love fsharp" }))
-        let result = tck.ExpectMsg<ClassifyResult>()
+        let result = tck.ExpectMsg<ClassificationResult>()
         result.score.TryFind(Emotion.Positive).Value |> should be (greaterThan (result.score.TryFind(Emotion.Negative).Value))
 
     [<Fact>]
@@ -41,7 +41,7 @@ module Tests =
         actor <! SentimentCommand(Train({ value = positiveText; category = Emotion.Positive; weight = None }))
         actor <! SentimentCommand(Train({ value = negativeText; category = Emotion.Negative; weight = None }))
         actor <! SentimentCommand(Classify({ text = "My brother hate java" }))
-        let result = tck.ExpectMsg<ClassifyResult>()
+        let result = tck.ExpectMsg<ClassificationResult>()
         result.score.TryFind(Emotion.Negative).Value |> should be (greaterThan (result.score.TryFind(Emotion.Positive).Value))
 
     [<Fact>]
