@@ -28,7 +28,6 @@ module SentimentApi =
             fun (next : HttpFunc) (ctx : HttpContext) ->
                 task {
                     let! model = ctx.BindModelAsync<TrainRequest>()
-                    printfn "%A" model
                     let api = system.ActorSelection(Actors.router.Path)
                     api.Tell(SentimentCommand(Train({ value = model.text; category = model.category; weight = match model.weight with weight when weight > 1 -> Some weight | _ -> None  })))
                     return! customJson settings "" next ctx
