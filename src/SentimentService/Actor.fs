@@ -49,4 +49,4 @@ module Actor =
                         mailbox.Sender() <! { categories = (state.categories |> Map.map(fun _ x ->x.tokens ))  }
                         return! loop state
             }
-        loop(ClassifierState.empty(Some config))
+        loop(ClassifierState.empty(config))
