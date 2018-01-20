@@ -6,3 +6,4 @@ Akkling.TestKit
 Microsoft.DotNet.Watcher.Tools
 dotnet-xunit
 FsUnit.xUnit
+Unquote

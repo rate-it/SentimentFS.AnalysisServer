@@ -2033,6 +2033,8 @@ NUGET
       Nito.AsyncEx.Context (>= 1.1)
       System.Net.Http (>= 4.3.2)
       System.Reflection.TypeExtensions (>= 4.3)
+    Unquote (4.0)
+      FSharp.Core (>= 4.2.3) - restriction: || (&& (== net461) (>= netstandard2.0)) (== netcoreapp2.0) (== netstandard2.0)
     WindowsAzure.Storage (8.7) - restriction: || (&& (== net461) (>= netcoreapp2.0)) (== netcoreapp2.0) (&& (== netstandard2.0) (>= netcoreapp2.0))
       Microsoft.Data.OData (>= 5.8.2)
       NETStandard.Library (>= 1.6) - restriction: || (&& (== net461) (< net45)) (== netcoreapp2.0) (== netstandard2.0)

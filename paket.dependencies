@@ -36,6 +36,7 @@ nuget xunit.runner.visualstudio
 nuget Akka.TestKit.Xunit2
 nuget Akkling.TestKit
 nuget Expecto
+nuget Unquote
 nuget YoloDev.Expecto.TestSdk
 nuget Microsoft.NET.Test.Sdk
 clitool Microsoft.DotNet.Watcher.Tools
