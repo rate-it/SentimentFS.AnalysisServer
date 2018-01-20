@@ -27,7 +27,7 @@ module Sentiment =
 
     type ClassificationResult = { text: string; score: Map<Emotion, float> }
 
-    type ClassificatorState = { categories: Map<Emotion, Map<string, int>> }
+    type ClassificatorState = { tokens: Map<string, int>; trainingsQuantity: int }
 
 module TwitterApi =
     type GetTweets = { key: string }

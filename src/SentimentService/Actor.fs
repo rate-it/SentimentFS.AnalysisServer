@@ -46,7 +46,7 @@ module Actor =
                         mailbox.Sender() <! { text = query.text; score = result.score }
                         return! loop state
                     | GetState ->
-                        mailbox.Sender() <! { categories = (state.categories |> Map.map(fun _ x ->x.tokens ))  }
+                        mailbox.Sender() <! { tokens = state.tokens; trainingsQuantity = state.trainings  }
                         return! loop state
             }
         loop(ClassifierState.empty(config))
