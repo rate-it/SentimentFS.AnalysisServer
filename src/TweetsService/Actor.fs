@@ -14,7 +14,6 @@ open SentimentFS.AnalysisServer.Common.Messages.Sentiment
 module TwitterApi =
 
     let downloadTweetsFlow (maxConcurrentDownloads: int)(credentials: TwitterCredentials) =
-
         Flow.id
         |> Flow.asyncMapUnordered(maxConcurrentDownloads)(fun q ->
                                          async {
