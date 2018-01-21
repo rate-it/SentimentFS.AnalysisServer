@@ -13,12 +13,10 @@ open SentimentFS.AnalysisServer.Common.Messages.Sentiment
 
 module TwitterApi =
 
-    [<Literal>]
-    let MaxConcurrentDownloads = 50
+    let downloadTweetsFlow (maxConcurrentDownloads: int)(credentials: TwitterCredentials) =
 
-    let downloadTweetsFlow (credentials: TwitterCredentials) =
         Flow.id
-        |> Flow.asyncMapUnordered(MaxConcurrentDownloads)(fun q ->
+        |> Flow.asyncMapUnordered(maxConcurrentDownloads)(fun q ->
                                          async {
                                             let options = SearchTweetsParameters(q.key)
                                             options.SearchType <- Nullable<SearchResultType>(SearchResultType.Recent)
