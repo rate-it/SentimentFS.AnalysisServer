@@ -10,6 +10,7 @@ open System
 open Tweetinvi.Models
 open Tweetinvi
 open SentimentFS.AnalysisServer.Common.Messages.Sentiment
+open Akkling
 
 module TwitterApi =
 
@@ -36,6 +37,16 @@ module TwitterApi =
                           Latitude = match tweet.Coordinates with null -> 0.0 | coord -> coord.Latitude;
                           HashTags = (tweet.Hashtags |> Seq.map(fun x -> x.Text))
                           Sentiment = Emotion.Neutral })
+
+    let sentimentFlow (maxConcurentSentimentReuest)(sentimentActor: IActorRef<SentimentMessage>) =
+        Flow.id
+        |> Flow.asyncMapUnordered(maxConcurentSentimentReuest)(fun tweet ->
+                                                                    async {
+                                                                        let! s = sentimentActor <? SentimentCommand(Classify({ text = tweet.Text }))
+                                                                        let e,_ = s.score |> Map.toList |> List.maxBy(fun (_,v) -> v)
+                                                                        return { tweet with Sentiment = e }
+                                                                    }
+                                                                )
 
 module Actor =
     open Akkling
