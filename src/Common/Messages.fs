@@ -46,9 +46,11 @@ module Twitter =
 
     type Tweets = { tweets: Tweet seq }
 
+    type SearchTweets = { key: string; since: DateTime; quantity: int }
+
     type TweetsCommands =
         | Add of Tweet
-        | GetByKey of string
+        | Search of key: string
 
     type TweetsMessage =
         | Init of tweets: Tweet seq
