@@ -48,11 +48,12 @@ module TwitterApi =
                                                                     }
                                                                 )
 
-module Actor =
-    open Akkling
-    open Akkling.Persistence
-    open Akkling.Streams
+    let trainSink(sentimentActor: IActorRef<SentimentMessage>) =
+        Sink.forEach(fun tweet ->
+                            sentimentActor <! SentimentCommand(Train({ value = tweet.Text; category = tweet.Sentiment; weight = None  }))
+                        )
 
+module Actor =
 
     let tweetsActor (mailbox: Actor<TweetsMessage>) =
         let rec loop (state) =
