@@ -11,6 +11,9 @@ open Tweetinvi.Models
 open Tweetinvi
 open SentimentFS.AnalysisServer.Common.Messages.Sentiment
 open Akkling
+open Akka.Streams.Dsl
+open Akka.Streams.Dsl
+open Akka.Streams
 
 module TwitterApi =
 
@@ -38,9 +41,9 @@ module TwitterApi =
                           HashTags = (tweet.Hashtags |> Seq.map(fun x -> x.Text))
                           Sentiment = Emotion.Neutral })
 
-    let sentimentFlow (maxConcurentSentimentReuest)(sentimentActor: IActorRef<SentimentMessage>) =
+    let sentimentFlow (maxConcurentSentimentRequest)(sentimentActor: IActorRef<SentimentMessage>) =
         Flow.id
-        |> Flow.asyncMapUnordered(maxConcurentSentimentReuest)(fun tweet ->
+        |> Flow.asyncMapUnordered(maxConcurentSentimentRequest)(fun tweet ->
                                                                     async {
                                                                         let! s = sentimentActor <? SentimentCommand(Classify({ text = tweet.Text }))
                                                                         let e,_ = s.score |> Map.toList |> List.maxBy(fun (_,v) -> v)
@@ -52,6 +55,15 @@ module TwitterApi =
         Sink.forEach(fun tweet ->
                             sentimentActor <! SentimentCommand(Train({ value = tweet.Text; category = tweet.Sentiment; weight = None  }))
                         )
+
+    let twitterApiGraph (maxConcurrentDownloads: int)(credentials: TwitterCredentials)(sentimentActor: IActorRef<SentimentMessage>)  =
+        Graph.create(fun builder ->
+                            let downloadFlow = builder.Add(Flow.id |> Flow.via(downloadTweetsFlow(maxConcurrentDownloads)(credentials)) |> Flow.via(sentimentFlow(maxConcurrentDownloads)(sentimentActor)))
+                            let broadcast = builder.Add(Broadcast(2))
+                            builder.From(downloadFlow).To(broadcast.In) |> ignore
+                            builder.From(broadcast).To(trainSink(sentimentActor)) |> ignore
+                            FlowShape(downloadFlow.Inlet, broadcast.Out(0))
+                       )
 
 module Actor =
 
