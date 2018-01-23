@@ -3,7 +3,9 @@ source https://www.myget.org/F/machine-learning/api/v3/index.json
 source https://api.nuget.org/v3/index.json
 source https://www.myget.org/F/sentimentfs/api/v2
 
-nuget CassandraCSharpDriver
+nuget Elasticsearch.Net >= 6.0.0-rc1
+nuget MongoDB.Driver
+nuget MongoDB.Bson
 nuget FSharp.Core
 nuget SentimentFS.NaiveBayes
 nuget SentimentFS.Stemmer

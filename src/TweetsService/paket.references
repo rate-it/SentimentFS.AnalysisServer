@@ -11,3 +11,6 @@ Akkling.Cluster.Sharding
 Akkling.Streams
 FsPickler
 TweetinviAPI
+Elasticsearch.Net
+MongoDB.Driver
+MongoDB.Bson
