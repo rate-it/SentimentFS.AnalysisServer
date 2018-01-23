@@ -10,7 +10,6 @@ module WebServer =
     open Giraffe.HttpHandlers
     open Akka.Configuration
     open Api.Actor
-    open SentimentFS.AnalysisServer.WebApi.Storage
     open SentimentFS.AnalysisServer.Common.Routing
     open System.IO
     open Microsoft.Extensions.Configuration

@@ -2,7 +2,6 @@
 
 open Akka.Actor
 open Akka.Configuration
-open SentimentFS.AnalysisServer.WebApi.Storage
 open System
 open System.IO
 open System.Collections.Generic
