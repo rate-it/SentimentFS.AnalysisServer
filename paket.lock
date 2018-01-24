@@ -1038,7 +1038,7 @@ NUGET
       Microsoft.Extensions.DependencyInjection.Abstractions (>= 2.0) - restriction: || (&& (== net461) (>= netstandard2.0)) (== netcoreapp2.0) (== netstandard2.0)
       Microsoft.Extensions.Options (>= 2.0) - restriction: || (&& (== net461) (>= netstandard2.0)) (== netcoreapp2.0) (== netstandard2.0)
       System.Text.Encodings.Web (>= 4.4) - restriction: || (&& (== net461) (>= netstandard2.0)) (== netcoreapp2.0) (== netstandard2.0)
-    Microsoft.IdentityModel.Clients.ActiveDirectory (3.17.3) - restriction: || (&& (== net461) (>= netcoreapp2.0)) (== netcoreapp2.0) (&& (== netstandard2.0) (>= netcoreapp2.0))
+    Microsoft.IdentityModel.Clients.ActiveDirectory (3.18) - restriction: || (&& (== net461) (>= netcoreapp2.0)) (== netcoreapp2.0) (&& (== netstandard2.0) (>= netcoreapp2.0))
       NETStandard.Library (>= 1.6) - restriction: || (&& (== net461) (< net45)) (== netcoreapp2.0) (== netstandard2.0)
       System.Runtime.Serialization.Json (>= 4.3) - restriction: || (&& (== net461) (< net45)) (== netcoreapp2.0) (== netstandard2.0)
       System.Runtime.Serialization.Primitives (>= 4.3) - restriction: || (&& (== net461) (< net45)) (== netcoreapp2.0) (== netstandard2.0)
