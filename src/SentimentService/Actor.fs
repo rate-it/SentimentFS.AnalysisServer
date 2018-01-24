@@ -43,7 +43,7 @@ module Actor =
                         return! Persist (TrainEvent(train))
                     | Classify query ->
                         let result = (state |> Classifier.classify(query.text)(Multinominal))
-                        mailbox.Sender() <! { text = query.text; score = result.score }
+                        mailbox.Sender() <! { text = query.text; score = result.score |> Map.toArray |> Array.map(fun (e, p) -> { emotion = e; probability = p })}
                         return! loop state
                     | GetState ->
                         mailbox.Sender() <! { tokens = state.tokens; trainingsQuantity = state.trainings  }

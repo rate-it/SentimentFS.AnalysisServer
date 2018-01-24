@@ -25,7 +25,9 @@ module Sentiment =
         | TrainEvent of Train
         | SentimentCommand of SentimentActorCommand
 
-    type ClassificationResult = { text: string; score: Map<Emotion, float> }
+    type Sentiment = { emotion: Emotion; probability: float }
+
+    type ClassificationResult = { text: string; score: Sentiment array }
 
     type ClassificatorState = { tokens: Map<string, int>; trainingsQuantity: int }
 
