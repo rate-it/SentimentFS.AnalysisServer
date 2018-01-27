@@ -37,14 +37,14 @@ module TwitterApi =
 module Twitter =
     open Sentiment
 
+    type Coordinates = { Longitude: double; Latitude: double }
     type Tweet = { IdStr: string
                    Text: string
                    HashTags: string seq
                    CreationDate: DateTime
                    Language: string
-                   Longitude: double
-                   Latitude: double
-                   Sentiment: Emotion }
+                   Coordinates: Coordinates option
+                   Sentiment: Emotion option }
 
     type Tweets = { tweets: Tweet seq }
 
