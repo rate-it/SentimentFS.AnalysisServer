@@ -29,9 +29,9 @@ module Dto =
               Text = x.Text
               Date = x.CreationDate
               Lang = x.Language
-              Longitude = x.Longitude
-              Latitude = x.Latitude
-              Sentiment = x.Sentiment
+              Longitude = match x.Coordinates with | Some c -> c.Longitude | None -> 0.0
+              Latitude = match x.Coordinates with | Some c -> c.Latitude | None -> 0.0
+              Sentiment = match x.Sentiment with | Some e -> e | None -> Emotion.Neutral
             }
         static member ToTweet(x: TweetDto):Tweet =
             { IdStr = x.IdStr
@@ -39,9 +39,8 @@ module Dto =
               Text = x.Text
               CreationDate = x.Date
               Language = x.Lang
-              Longitude = x.Longitude
-              Latitude = x.Latitude
-              Sentiment = x.Sentiment
+              Coordinates = if x.Longitude = 0.0 && x.Latitude = 0.0 then None else Some { Longitude = x.Longitude; Latitude = x.Latitude }
+              Sentiment = Some x.Sentiment
             }
         static member Zero () = { IdStr = ""
                                   Text = ""
