@@ -36,10 +36,9 @@ module TwitterApi =
                           Text = tweet.Text;
                           Language = tweet.Language.ToString();
                           CreationDate = tweet.CreatedAt;
-                          Longitude = match tweet.Coordinates with null -> 0.0 | coord -> coord.Longitude;
-                          Latitude = match tweet.Coordinates with null -> 0.0 | coord -> coord.Latitude;
+                          Coordinates = match tweet.Coordinates with null -> None | coord -> Some { Longitude = coord.Longitude; Latitude = coord.Latitude };
                           HashTags = (tweet.Hashtags |> Seq.map(fun x -> x.Text))
-                          Sentiment = Emotion.Neutral })
+                          Sentiment = None })
 
     let sentimentFlow (maxConcurentSentimentRequest)(sentimentActor: IActorRef<SentimentMessage>) =
         Flow.id
@@ -47,13 +46,13 @@ module TwitterApi =
                                                                     async {
                                                                         let! s = sentimentActor <? SentimentCommand(Classify({ text = tweet.Text }))
                                                                         let r = s.score |> Array.maxBy(fun res -> res.probability)
-                                                                        return { tweet with Sentiment = r.emotion }
+                                                                        return { tweet with Sentiment = Some r.emotion }
                                                                     }
                                                                 )
 
     let trainSink(sentimentActor: IActorRef<SentimentMessage>) =
         Sink.forEach(fun tweet ->
-                            sentimentActor <! SentimentCommand(Train({ value = tweet.Text; category = tweet.Sentiment; weight = None  }))
+                            sentimentActor <! SentimentCommand(Train({ value = tweet.Text; category = defaultArg tweet.Sentiment Emotion.Neutral; weight = None  }))
                         )
 
     let twitterApiGraph (maxConcurrentDownloads: int)(credentials: TwitterCredentials)(sentimentActor: IActorRef<SentimentMessage>)  =
