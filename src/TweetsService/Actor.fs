@@ -46,8 +46,8 @@ module TwitterApi =
         |> Flow.asyncMapUnordered(maxConcurentSentimentRequest)(fun tweet ->
                                                                     async {
                                                                         let! s = sentimentActor <? SentimentCommand(Classify({ text = tweet.Text }))
-                                                                        let e,_ = s.score |> Map.toList |> List.maxBy(fun (_,v) -> v)
-                                                                        return { tweet with Sentiment = e }
+                                                                        let r = s.score |> Array.maxBy(fun res -> res.probability)
+                                                                        return { tweet with Sentiment = r.emotion }
                                                                     }
                                                                 )
 

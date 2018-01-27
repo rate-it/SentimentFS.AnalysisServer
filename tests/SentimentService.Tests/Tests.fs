@@ -31,7 +31,7 @@ module Tests =
         actor <! SentimentCommand(Train({ value = negativeText; category = Emotion.Negative; weight = None }))
         actor <! SentimentCommand(Classify({ text = "My brother love fsharp" }))
         let result = tck.ExpectMsg<ClassificationResult>()
-        result.score.TryFind(Emotion.Positive).Value |> should be (greaterThan (result.score.TryFind(Emotion.Negative).Value))
+        (result.score |> Array.find(fun x -> x.emotion = Emotion.Positive))  |> should be (greaterThan ((result.score |> Array.find(fun x -> x.emotion = Emotion.Negative))))
 
     [<Fact>]
     let ``Sentiment actor negative text`` () = testDefault <| fun tck ->
@@ -42,14 +42,14 @@ module Tests =
         actor <! SentimentCommand(Train({ value = negativeText; category = Emotion.Negative; weight = None }))
         actor <! SentimentCommand(Classify({ text = "My brother hate java" }))
         let result = tck.ExpectMsg<ClassificationResult>()
-        result.score.TryFind(Emotion.Negative).Value |> should be (greaterThan (result.score.TryFind(Emotion.Positive).Value))
+        (result.score |> Array.find(fun x -> x.emotion = Emotion.Negative))  |> should be (greaterThan ((result.score |> Array.find(fun x -> x.emotion = Emotion.Positive))))
 
     [<Fact>]
     let ``Get state when actor has no any training`` () = testDefault <| fun tck ->
         let actor = spawn tck "sentiment" (propsPersist (sentimentActor(None)))
         actor <! SentimentCommand(GetState)
         let result = tck.ExpectMsg<ClassificatorState>()
-        result.categories.IsEmpty |> should be True
+        result.tokens.IsEmpty |> should be True
 
 
     [<Fact>]
@@ -61,6 +61,4 @@ module Tests =
         actor <! SentimentCommand(Train({ value = negativeText; category = Emotion.Negative; weight = None }))
         actor <! SentimentCommand(GetState)
         let result = tck.ExpectMsg<ClassificatorState>()
-        result.categories.IsEmpty |> should be False
-        result.categories.ContainsKey(Emotion.Positive) |> should be True
-        result.categories.ContainsKey(Emotion.Negative) |> should be True
+        result.tokens.IsEmpty |> should be False
