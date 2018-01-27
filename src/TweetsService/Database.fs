@@ -1,5 +1,5 @@
 namespace SentimentFS.AnalysisServer
 
-module Database =
+module Cassadra =
 
     let a = 2
