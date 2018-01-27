@@ -31,7 +31,7 @@ module Dto =
               Lang = x.Language
               Longitude = match x.Coordinates with | Some c -> c.Longitude | None -> 0.0
               Latitude = match x.Coordinates with | Some c -> c.Latitude | None -> 0.0
-              Sentiment = match x.Sentiment with | Some e -> e | None -> Emotion.Neutral
+              Sentiment = defaultArg x.Sentiment Emotion.Neutral
             }
         static member ToTweet(x: TweetDto):Tweet =
             { IdStr = x.IdStr
@@ -69,3 +69,17 @@ module CassandraDb =
                             PRIMARY KEY(id_str)
                           );
                         """)
+
+    let private store (tweets: Tweets) (session: ISession) =
+        async {
+            let batch = BatchStatement()
+            let query = session.Prepare("""
+                            INSERT INTO tweets (id_str, text, hashtags, creation_date, lang, longitude, latitude, sentiment) VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+                        """)
+            for tweet in tweets.tweets do
+                let coordinates = defaultArg tweet.Coordinates { Longitude = 0.0; Latitude = 0.0 }
+                let emotion = defaultArg tweet.Sentiment Emotion.Neutral |> int
+                query.Bind(tweet.IdStr, tweet.Text, tweet.HashTags, tweet.CreationDate, tweet.Language, coordinates.Longitude, coordinates.Latitude, emotion) |> batch.Add |> ignore
+
+            return! batch |> session.ExecuteAsync |> Async.AwaitTask
+}
