@@ -55,7 +55,7 @@ module Dto =
 module CassandraDb =
     open Cassandra
 
-    let private createTweetsCollectionIfNotExists (session: ISession) =
+    let createTweetsCollectionIfNotExists (session: ISession) =
         session.Execute("""
                           CREATE TABLE IF NOT EXISTS tweets (
                             id_str varchar,
@@ -70,7 +70,7 @@ module CassandraDb =
                           );
                         """)
 
-    let private store (tweets: Tweets) (session: ISession) =
+    let store (tweets: Tweets) (session: ISession) =
         async {
             let batch = BatchStatement()
             let query = session.Prepare("""
@@ -82,4 +82,13 @@ module CassandraDb =
                 query.Bind(tweet.IdStr, tweet.Text, tweet.HashTags, tweet.CreationDate, tweet.Language, coordinates.Longitude, coordinates.Latitude, emotion) |> batch.Add |> ignore
 
             return! batch |> session.ExecuteAsync |> Async.AwaitTask
-}
+        }
+
+module Elastic =
+    open Nest
+    open Dto
+
+    let store (tweet: TweetDto)(client: ElasticClient) =
+        2
+
+
