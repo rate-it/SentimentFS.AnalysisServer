@@ -88,9 +88,17 @@ module Elastic =
     open Nest
     open Dto
 
+    let indexName (name: string) =
+        IndexName.op_Implicit name
+
+    let tweetsIndexName = indexName "tweets"
+
+    let indexer index (ides:IndexDescriptor<'T>)  =
+        ides.Index(index) :> IIndexRequest<'T>
+
     let store (tweet: TweetDto)(client: ElasticClient) =
         async {
-            return! client.IndexAsync(tweet, fun idx -> idx.Index(IndexName()))
+            return! client.IndexAsync(tweet, (fun idx -> indexer tweetsIndexName idx)) |> Async.AwaitTask
         }
 
 
