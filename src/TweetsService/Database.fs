@@ -53,8 +53,6 @@ module Dto =
 
 
 module CassandraDb =
-    open Cassandra
-
     let createTweetsCollectionIfNotExists (session: ISession) =
         session.Execute("""
                           CREATE TABLE IF NOT EXISTS tweets (
