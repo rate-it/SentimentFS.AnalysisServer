@@ -64,6 +64,9 @@ module TwitterApi =
                             FlowShape(downloadFlow.Inlet, broadcast.Out(0))
                        )
 
+    let storeToDbSink(dagreeOfParalellism)(store: Tweet -> Async<unit>) =
+        Sink.forEachParallel(dagreeOfParalellism)(store >> Async.RunSynchronously)
+
 module Actor =
 
     let tweetsActor (mailbox: Actor<TweetsMessage>) =
