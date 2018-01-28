@@ -89,6 +89,8 @@ module Elastic =
     open Dto
 
     let store (tweet: TweetDto)(client: ElasticClient) =
-        2
+        async {
+            return! client.IndexAsync(tweet, fun idx -> idx.Index(IndexName()))
+        }
 
 
