@@ -55,7 +55,7 @@ module Twitter =
         | Search of key: string
 
     type TweetsMessage =
-        | Init of tweets: Tweet seq
-        | Add of Tweet
+        | Insert of Tweet
+        | Search of SearchTweets
 
 
