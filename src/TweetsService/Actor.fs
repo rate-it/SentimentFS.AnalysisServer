@@ -66,15 +66,34 @@ module TwitterApi =
 
     let twitterApiGraph (maxConcurrentDownloads: int)(credentials: TwitterCredentials)(sentimentActor: IActorRef<SentimentMessage>)  =
         Graph.create(fun builder ->
+
                             let downloadFlow = builder.Add(Flow.id |> Flow.via(downloadTweetsFlow(maxConcurrentDownloads)(credentials)) |> Flow.via(sentimentFlow(maxConcurrentDownloads)(sentimentActor)))
                             let broadcast = builder.Add(Broadcast(2))
                             builder.From(downloadFlow).To(broadcast.In) |> ignore
-                            builder.From(broadcast).To(trainSink(sentimentActor)) |> ignore
-                            FlowShape(downloadFlow.Inlet, broadcast.Out(0))
+                            builder.From(broadcast.Out(0)).To(trainSink(sentimentActor)) |> ignore
+                            FlowShape(downloadFlow.Inlet, broadcast.Out(1))
                        )
 
     let storeToDbSink(dagreeOfParalellism)(store: Tweet -> Async<unit>) =
         Sink.forEachParallel(dagreeOfParalellism)(store >> Async.RunSynchronously)
+
+    let twitterApiSearchActor (credentials: TwitterCredentials)(sentimentActor: IActorRef<SentimentMessage>) =
+        let apiSearchSource = Source.actorRef<SearchTweets>(OverflowStrategy.DropNew)(1000)
+        let twitterApiSinkGraph = apiSearchSource
+                                    |> Graph.create1(fun builder s ->
+                                                        let twitetrApiSearchFlowGraph = builder.Add(Flow.id |> twitterApiGraph(50)(credentials)(sentimentActor))
+                                                        let do
+                                                    )
+
+    let twitterApiActor (mailbox: Actor<TwitterApiMessage>) =
+        let rec loop () = actor {
+            let! msg = mailbox.Receive()
+            match msg with
+            | SearchTweets q ->
+                return loop()
+            return loop()
+        }
+        loop ()
 
 module Actor =
 

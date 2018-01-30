@@ -54,6 +54,9 @@ module Twitter =
         | Add of Tweet
         | Search of key: string
 
+    type TwitterApiMessage =
+        | SearchTweets of SearchTweets
+
     type TweetsMessage =
         | Insert of Tweet
         | Search of SearchTweets
