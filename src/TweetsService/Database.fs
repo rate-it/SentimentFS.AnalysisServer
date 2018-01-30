@@ -3,6 +3,7 @@ open System
 open SentimentFS.AnalysisServer.Common.Messages.Sentiment
 open Cassandra
 open SentimentFS.AnalysisServer.Common.Messages.Twitter
+open Nest
 
 module Dto =
 
@@ -50,6 +51,7 @@ module Dto =
                                   Longitude = 0.0
                                   Latitude = 0.0
                                   Sentiment = Emotion.Neutral }
+open Dto
 
 
 module CassandraDb =
@@ -100,3 +102,10 @@ module Elastic =
         }
 
 
+type Storage =
+    | InMemory
+    | ElasticSearchAndCassandra of ICluster * ElasticClient
+
+
+type ITweetsRepository =
+    abstract member StoreAsync : TweetDto -> Async<Unit>
