@@ -15,6 +15,9 @@ open Akka.Streams
 
 module TwitterApi =
 
+    [<Literal>]
+    let MaxConcurrentDownloads = 5000
+
     let downloadTweetsFromApi q =
         async {
             let options = SearchTweetsParameters(q.key)
@@ -64,26 +67,23 @@ module TwitterApi =
                             sentimentActor <! SentimentCommand(Train({ value = tweet.Text; category = defaultArg tweet.Sentiment Emotion.Neutral; weight = None  }))
                         )
 
-    let twitterApiGraph (maxConcurrentDownloads: int)(credentials: TwitterCredentials)(sentimentActor: IActorRef<SentimentMessage>)  =
-        Graph.create(fun builder ->
+    let searchActorSource(credentials: TwitterCredentials)(sentimentActor: IActorRef<SentimentMessage>)  =
+        let apiSearchSource = Source.actorRef<SearchTweets>(OverflowStrategy.DropNew)(1000)
+        let graph = Graph.create(fun builder ->
 
-                            let downloadFlow = builder.Add(Flow.id |> Flow.via(downloadTweetsFlow(maxConcurrentDownloads)(credentials)) |> Flow.via(sentimentFlow(maxConcurrentDownloads)(sentimentActor)))
+                            let downloadFlow = builder.Add(Flow.id |> Flow.via(downloadTweetsFlow(MaxConcurrentDownloads)(credentials)) |> Flow.via(sentimentFlow(MaxConcurrentDownloads)(sentimentActor)))
                             let broadcast = builder.Add(Broadcast(2))
                             builder.From(downloadFlow).To(broadcast.In) |> ignore
                             builder.From(broadcast.Out(0)).To(trainSink(sentimentActor)) |> ignore
                             FlowShape(downloadFlow.Inlet, broadcast.Out(1))
                        )
+        apiSearchSource |> Source.via graph
 
     let storeToDbSink(dagreeOfParalellism)(store: Tweet -> Async<unit>) =
         Sink.forEachParallel(dagreeOfParalellism)(store >> Async.RunSynchronously)
 
-    let twitterApiSearchActor (credentials: TwitterCredentials)(sentimentActor: IActorRef<SentimentMessage>) =
-        let apiSearchSource = Source.actorRef<SearchTweets>(OverflowStrategy.DropNew)(1000)
-        let twitterApiSinkGraph = apiSearchSource
-                                    |> Graph.create1(fun builder s ->
-                                                        let twitetrApiSearchFlowGraph = builder.Add(Flow.id |> twitterApiGraph(50)(credentials)(sentimentActor))
-                                                        let do
-                                                    )
+    let sub =
+        Sink.ofSubscriber
 
     let twitterApiActor (mailbox: Actor<TwitterApiMessage>) =
         let rec loop () = actor {
