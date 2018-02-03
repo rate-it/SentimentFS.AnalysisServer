@@ -110,3 +110,22 @@ type Storage =
 type ITweetsRepository =
     abstract member StoreAsync : TweetDto -> Async<Unit>
     abstract member GetAsync: SearchTweets -> Async<Tweet seq>
+
+
+module Storage =
+
+    let get db =
+        let mutable tweets = []
+        match db with
+        | InMemory ->
+            { new ITweetsRepository with
+                member ___.StoreAsync(tweet) =
+                    async {
+                        tweets <- tweet :: tweets
+                        return ()
+                    }
+                member ___.GetAsync(query) =
+                    async {
+                        return tweets |> List.filter(fun x -> x.Text.Contains(query.key)) |> List.map(TweetDto.ToTweet) |> List.toSeq
+                    }
+            }
