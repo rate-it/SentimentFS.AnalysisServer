@@ -98,7 +98,7 @@ module Actor =
 
     type Config = { credentials: TwitterCredentials }
 
-    let tweetsActor (mailbox: Actor<TweetsMessage>)(db: ITweetsRepository)(config: Config) =
+    let tweetsActor (db: ITweetsRepository)(config: Config)(mailbox: Actor<TweetsMessage>) =
         let rec loop () =
             actor {
                 let! msg = mailbox.Receive()
