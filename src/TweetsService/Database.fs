@@ -109,3 +109,4 @@ type Storage =
 
 type ITweetsRepository =
     abstract member StoreAsync : TweetDto -> Async<Unit>
+    abstract member GetAsync: SearchTweets -> Async<Tweet seq>

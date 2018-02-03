@@ -98,13 +98,20 @@ module Actor =
 
     type Config = { credentials: TwitterCredentials }
 
-    let tweets (mailbox: Actor<TweetsMessage>)(db: ITweetsRepository)(config: Config) =
+    let tweetsActor (mailbox: Actor<TweetsMessage>)(db: ITweetsRepository)(config: Config) =
         let rec loop (state) =
             actor {
                 let! msg = mailbox.Receive()
                 match msg with
                 | Insert tweet ->
                     do! db.StoreAsync(Dto.TweetDto.FromTweet(tweet))
+                    return loop()
+                | Search q ->
+                    let! result = db.GetAsync(q)
+                    if result |> Seq.isEmpty then
+                        mailbox.Sender() <! None
+                    else
+                        mailbox.Sender() <! Some result
                     return loop()
                 return loop()
             }
