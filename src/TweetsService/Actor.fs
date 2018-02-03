@@ -96,15 +96,18 @@ module TwitterApi =
 
 module Actor =
 
-    let tweets (mailbox: Actor<TweetsMessage>)(credentials: TwitterCredentials) =
-        let sentimentActor = mailbox.System.ActorSelection("")
-        let twitterApiSearchActorSource = TwitterApi.searchActorSource(credentials)(sentimentActor.Anchor :?> IActorRef<SentimentMessage>)
+    type Config = { credentials: TwitterCredentials; db: ITweetsRepository }
+
+    let tweets (mailbox: Actor<TweetsMessage>)(config: Config) =
         let rec loop (state) =
             actor {
                 let! msg = mailbox.Receive()
-                return loop({tweets = []})
+                match msg with
+                | Insert tweet ->
+                    do! config.db.StoreAsync()
+                return loop()
             }
-        loop({tweets = []})
+        loop()
 
 
 
