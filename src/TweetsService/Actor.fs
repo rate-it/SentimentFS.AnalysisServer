@@ -61,6 +61,15 @@ module Actor =
     open TwitterApi
     type Config = { credentials: TwitterCredentials; sentimentActorPath: string }
 
+
+    let twitterApiActor(mailbox: Actor<SearchTweets>) =
+        let rec loop() =
+            actor {
+                let! msg = mailbox.Receive()
+                return loop()
+            }
+        loop()
+
     let tweetsActor (db: ITweetsRepository)(config: Config)(mailbox: Actor<TweetsMessage>) =
         let apiSearchSource = Source.actorRef(OverflowStrategy.DropNew)(1000)
         let selfDbSink = Sink.forEachParallel(50) (fun tweet -> mailbox.Self <! Insert tweet )
