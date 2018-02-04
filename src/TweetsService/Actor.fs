@@ -3,16 +3,13 @@ namespace SentimentFS.AnalysisServer
 open Common.Messages.Twitter
 open Akka.Streams.Dsl
 open Akkling.Streams
-open Akka
 open Tweetinvi.Parameters
 open System
 open Tweetinvi.Models
 open Tweetinvi
 open SentimentFS.AnalysisServer.Common.Messages.Sentiment
 open Akkling
-open Akka.Streams.Dsl
 open Akka.Streams
-open Akka.Actor
 
 module TwitterApi =
 
@@ -32,16 +29,7 @@ module TwitterApi =
 
     let downloadTweetsFlow (maxConcurrentDownloads: int)(credentials: TwitterCredentials) =
         Flow.id
-        |> Flow.asyncMapUnordered(maxConcurrentDownloads)(fun q ->
-                                         async {
-                                            let options = SearchTweetsParameters(q.key)
-                                            options.SearchType <- Nullable<SearchResultType>(SearchResultType.Recent)
-                                            options.Lang <- Nullable<LanguageFilter>(LanguageFilter.English)
-                                            options.Filters <- TweetSearchFilters.None
-                                            options.MaximumNumberOfResults <- q.quantity
-                                            options.Since <- q.since
-                                            return! SearchAsync.SearchTweets(options) |> Async.AwaitTask
-                                         })
+        |> Flow.asyncMapUnordered(maxConcurrentDownloads)(downloadTweetsFromApi)
         |> Flow.collect(id)
         |> Flow.filter(fun tweet -> not tweet.IsRetweet)
         |> Flow.map(fun tweet ->
@@ -52,6 +40,7 @@ module TwitterApi =
                           Coordinates = match tweet.Coordinates with null -> None | coord -> Some { Longitude = coord.Longitude; Latitude = coord.Latitude };
                           HashTags = (tweet.Hashtags |> Seq.map(fun x -> x.Text))
                           Sentiment = None })
+
 
     let sentimentFlow (maxConcurentSentimentRequest)(sentimentActor: ICanTell<SentimentMessage>) =
         Flow.id
@@ -68,37 +57,25 @@ module TwitterApi =
                             sentimentActor <! SentimentCommand(Train({ value = tweet.Text; category = defaultArg tweet.Sentiment Emotion.Neutral; weight = None  }))
                         )
 
-    let searchActorSource(credentials: TwitterCredentials)(sentimentActor: IActorRef<SentimentMessage>)  =
-        let apiSearchSource = Source.actorRef(OverflowStrategy.DropNew)(1000)
-        let graph = Graph.create(fun builder ->
-
-                            let downloadFlow = builder.Add(Flow.id |> Flow.via(downloadTweetsFlow(MaxConcurrentDownloads)(credentials)) |> Flow.via(sentimentFlow(MaxConcurrentDownloads)(sentimentActor)))
-                            let broadcast = builder.Add(Broadcast(2))
-                            builder.From(downloadFlow).To(broadcast.In) |> ignore
-                            builder.From(broadcast.Out(0)).To(trainSink(sentimentActor)) |> ignore
-                            FlowShape(downloadFlow.Inlet, broadcast.Out(1))
-                       )
-        apiSearchSource |> Source.via graph
-
-    let storeToDbSink(dagreeOfParalellism)(store: Tweet -> Async<unit>) =
-        Sink.forEachParallel(dagreeOfParalellism)(store >> Async.RunSynchronously)
-
-
-    let twitterApiActor (mailbox: Actor<TwitterApiMessage>) =
-        let rec loop () = actor {
-            let! msg = mailbox.Receive()
-            match msg with
-            | SearchTweets q ->
-                return loop()
-            return loop()
-        }
-        loop ()
-
 module Actor =
-
-    type Config = { credentials: TwitterCredentials }
+    open TwitterApi
+    type Config = { credentials: TwitterCredentials; sentimentActorPath: string }
 
     let tweetsActor (db: ITweetsRepository)(config: Config)(mailbox: Actor<TweetsMessage>) =
+        let apiSearchSource = Source.actorRef(OverflowStrategy.DropNew)(1000)
+        let selfDbSink = Sink.forEachParallel(50) (fun tweet -> mailbox.Self <! Insert tweet )
+        let apiGraph = apiSearchSource |> Graph.create1(fun builder s ->
+                                                            let sentimentActor:TypedActorSelection<SentimentMessage> = select mailbox.System config.sentimentActorPath
+                                                            let downloadFlow = builder.Add(Flow.id
+                                                                                           |> Flow.via(downloadTweetsFlow(MaxConcurrentDownloads)(config.credentials))
+                                                                                           |> Flow.via(sentimentFlow(MaxConcurrentDownloads)(sentimentActor)))
+                                                            let tweetsBroadcast = builder.Add(Broadcast(2))
+                                                            builder.From(s.Outlet).Via(downloadFlow).To(tweetsBroadcast.In) |> ignore
+                                                            builder.From(tweetsBroadcast.Out(0)).To(trainSink(sentimentActor)) |> ignore
+                                                            builder.From(tweetsBroadcast.Out(1)).To(selfDbSink) |> ignore
+                                                            ClosedShape.Instance
+                                                        )
+        let apiActor = apiGraph |> Graph.runnable |> Graph.run (mailbox.Materializer())
         let rec loop () =
             actor {
                 let! msg = mailbox.Receive()
@@ -109,6 +86,7 @@ module Actor =
                 | Search q ->
                     let! result = db.GetAsync(q)
                     if result |> Seq.isEmpty then
+                        apiActor <! q
                         mailbox.Sender() <! None
                     else
                         mailbox.Sender() <! Some result
