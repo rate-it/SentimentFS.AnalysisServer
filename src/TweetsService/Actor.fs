@@ -70,21 +70,7 @@ module Actor =
             }
         loop()
 
-    let tweetsActor (db: ITweetsRepository)(config: Config)(mailbox: Actor<TweetsMessage>) =
-        let apiSearchSource = Source.actorRef(OverflowStrategy.DropNew)(1000)
-        let selfDbSink = Sink.forEachParallel(50) (fun tweet -> mailbox.Self <! Insert tweet )
-        let apiGraph = apiSearchSource |> Graph.create1(fun builder s ->
-                                                            let sentimentActor:TypedActorSelection<SentimentMessage> = select mailbox.System config.sentimentActorPath
-                                                            let downloadFlow = builder.Add(Flow.id
-                                                                                           |> Flow.via(downloadTweetsFlow(MaxConcurrentDownloads)(config.credentials))
-                                                                                           |> Flow.via(sentimentFlow(MaxConcurrentDownloads)(sentimentActor)))
-                                                            let tweetsBroadcast = builder.Add(Broadcast(2))
-                                                            builder.From(s.Outlet).Via(downloadFlow).To(tweetsBroadcast.In) |> ignore
-                                                            builder.From(tweetsBroadcast.Out(0)).To(trainSink(sentimentActor)) |> ignore
-                                                            builder.From(tweetsBroadcast.Out(1)).To(selfDbSink) |> ignore
-                                                            ClosedShape.Instance
-                                                        )
-        let apiActor = apiGraph |> Graph.runnable |> Graph.run (mailbox.Materializer())
+    let tweetsActor (db: ITweetsRepository)(mailbox: Actor<TweetsMessage>) =
         let rec loop () =
             actor {
                 let! msg = mailbox.Receive()
@@ -95,7 +81,6 @@ module Actor =
                 | Search q ->
                     let! result = db.GetAsync(q)
                     if result |> Seq.isEmpty then
-                        apiActor <! q
                         mailbox.Sender() <! None
                     else
                         mailbox.Sender() <! Some result
