@@ -53,7 +53,7 @@ module TwitterApi =
                           HashTags = (tweet.Hashtags |> Seq.map(fun x -> x.Text))
                           Sentiment = None })
 
-    let sentimentFlow (maxConcurentSentimentRequest)(sentimentActor: IActorRef<SentimentMessage>) =
+    let sentimentFlow (maxConcurentSentimentRequest)(sentimentActor: ICanTell<SentimentMessage>) =
         Flow.id
         |> Flow.asyncMapUnordered(maxConcurentSentimentRequest)(fun tweet ->
                                                                     async {
@@ -63,7 +63,7 @@ module TwitterApi =
                                                                     }
                                                                 )
 
-    let trainSink(sentimentActor: IActorRef<SentimentMessage>) =
+    let trainSink(sentimentActor: ICanTell<SentimentMessage>) =
         Sink.forEachParallel(MaxConcurrentDownloads)(fun tweet ->
                             sentimentActor <! SentimentCommand(Train({ value = tweet.Text; category = defaultArg tweet.Sentiment Emotion.Neutral; weight = None  }))
                         )
