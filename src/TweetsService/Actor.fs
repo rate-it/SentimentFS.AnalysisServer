@@ -11,6 +11,12 @@ open SentimentFS.AnalysisServer.Common.Messages.Sentiment
 open Akkling
 open Akka.Streams
 
+module Actors =
+    open Common.Routing.ActorMetaData
+    let tweetsActor = create("tweets", None)
+    let sentimentRouter = create("sentiment-router", None)
+    let twitterApiActor = create("twitter-api", None)
+
 module TwitterApi =
 
     [<Literal>]
@@ -60,7 +66,6 @@ module TwitterApi =
 module Actor =
     open TwitterApi
     type Config = { credentials: TwitterCredentials; sentimentActorPath: string }
-
 
     let twitterApiActor(config: Config)(mailbox: Actor<SearchTweets>) =
         let apiSource = Source.actorRef(OverflowStrategy.DropNew)(5000)
