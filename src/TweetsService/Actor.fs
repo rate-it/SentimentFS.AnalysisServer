@@ -62,7 +62,16 @@ module Actor =
     type Config = { credentials: TwitterCredentials; sentimentActorPath: string }
 
 
-    let twitterApiActor(mailbox: Actor<SearchTweets>) =
+    let twitterApiActor(config: Config)(mailbox: Actor<SearchTweets>) =
+        let apiSource = Source.actorRef(OverflowStrategy.DropNew)(5000)
+        let graph = apiSource
+                        |> Graph.create1 (fun builder s ->
+                                            let sentimentActor:TypedActorSelection<SentimentMessage> = select mailbox.System config.sentimentActorPath
+                                            let downloadTweetsFlow = builder.Add(downloadTweetsFlow(50)(config.credentials))
+                                            let sentimentFlow = builder.Add(sentimentFlow(50)())
+
+                                        )
+
         let rec loop() =
             actor {
                 let! msg = mailbox.Receive()
