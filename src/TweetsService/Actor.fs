@@ -63,23 +63,35 @@ module TwitterApi =
                             sentimentActor <! SentimentCommand(Train({ value = tweet.Text; category = defaultArg tweet.Sentiment Emotion.Neutral; weight = None  }))
                         )
 
+    let insertToDbActorSink(tweetsActor: ICanTell<TweetsMessage>) =
+        Sink.forEachParallel(MaxConcurrentDownloads)(fun tweet -> tweetsActor <! Insert tweet)
+
 module Actor =
     open TwitterApi
-    type Config = { credentials: TwitterCredentials; sentimentActorPath: string }
+    type Config = { credentials: TwitterCredentials; }
 
     let twitterApiActor(config: Config)(mailbox: Actor<SearchTweets>) =
         let apiSource = Source.actorRef(OverflowStrategy.DropNew)(5000)
-        let graph = apiSource
-                        |> Graph.create1 (fun builder s ->
-                                            let sentimentActor:TypedActorSelection<SentimentMessage> = select mailbox.System config.sentimentActorPath
-                                            let downloadTweetsFlow = builder.Add(downloadTweetsFlow(50)(config.credentials))
-                                            let sentimentFlow = builder.Add(sentimentFlow(50)())
+        let graph system = apiSource
+                            |> Graph.create1 (fun builder s ->
+                                            let sentimentActor:TypedActorSelection<SentimentMessage> = select system (Actors.sentimentRouter.Path)
+                                            let tweetsActor: TypedActorSelection<TweetsMessage> = select system (Actors.tweetsActor.Path)
+                                            let downloadTweetsFlow = builder.Add(downloadTweetsFlow(MaxConcurrentDownloads)(config.credentials))
+                                            let sentimentFlow = builder.Add(sentimentFlow(MaxConcurrentDownloads)(sentimentActor))
+                                            let tweetBroadcast = builder.Add(Broadcast(2))
 
+                                            builder.From(s.Outlet).To(downloadTweetsFlow.Inlet) |> ignore
+                                            builder.From(downloadTweetsFlow.Outlet).Via(sentimentFlow).To(tweetBroadcast.In) |> ignore
+                                            builder.From(tweetBroadcast.Out(0)).To(trainSink(sentimentActor)) |> ignore
+                                            builder.From(tweetBroadcast.Out(1)).To(insertToDbActorSink(tweetsActor)) |> ignore
+                                            ClosedShape.Instance
                                         )
+        let twitter = graph(mailbox.System) |> Graph.runnable |> Graph.run (mailbox.Materializer())
 
         let rec loop() =
             actor {
                 let! msg = mailbox.Receive()
+                twitter <! msg
                 return loop()
             }
         loop()
