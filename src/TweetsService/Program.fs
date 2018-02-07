@@ -26,4 +26,5 @@ module Program =
             return ()
         } |> Async.RunSynchronously
         printfn "Hello World from F#!"
+        Console.ReadKey()
         0 // return an integer exit code

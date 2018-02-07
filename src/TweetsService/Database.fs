@@ -113,19 +113,40 @@ type ITweetsRepository =
 
 
 module Storage =
+    type private InMemoryMessages =
+    | Search of search: SearchTweets * AsyncReplyChannel<Tweet seq>
+    | InsertTweets of TweetDto
+
+    let private mailbox = lazy (
+        MailboxProcessor.Start(fun inbox ->
+            let rec loop tweets =
+                async {
+                    let! msg = inbox.Receive()
+                    match msg with
+                    | Search(s, reply) ->
+                        let result = tweets |> List.filter(fun x -> x.Text.Contains(s.key)) |> List.map(TweetDto.ToTweet) |> List.toSeq
+                        printf "DB %A" result
+                        reply.Reply(result)
+                        return! loop(tweets)
+                    | InsertTweets dto ->
+                        return! loop(dto :: tweets)
+
+                }
+            loop([])
+        )
+    )
 
     let get db =
-        let mutable tweets = []
         match db with
         | InMemory ->
             { new ITweetsRepository with
                 member ___.StoreAsync(tweet) =
                     async {
-                        tweets <- tweet :: tweets
+                        mailbox.Value.Post(InsertTweets tweet)
                         return ()
                     }
-                member ___.GetAsync(query) =
+                member ___.GetAsync(q) =
                     async {
-                        return tweets |> List.filter(fun x -> x.Text.Contains(query.key)) |> List.map(TweetDto.ToTweet) |> List.toSeq
+                        return! mailbox.Value.PostAndAsyncReply(fun ch -> Search(q, ch))
                     }
             }
