@@ -15,7 +15,8 @@ module Program =
     [<EntryPoint>]
     let main argv =
         let system = System.create "sentimentfs" <| (Configuration.load())
-        let actorProps = tweetsActor((Storage.get InMemory))
+        let db = Storage.get InMemory
+        let actorProps = tweetsActor(db)
         let sentimentactor = spawn system Actors.sentimentRouter.Name <| Props<SentimentMessage>.From(Props.Empty.WithRouter(FromConfig.Instance))
         //let twitterApiActor = spawn system Actors.twitterApiActor.Name props()
         let actor = spawn system Actors.tweetsActor.Name <| props (actorProps)

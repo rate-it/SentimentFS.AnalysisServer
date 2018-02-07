@@ -104,7 +104,6 @@ module Elastic =
 
 type Storage =
     | InMemory
-    | ElasticSearchAndCassandra of ICluster * ElasticClient
 
 
 type ITweetsRepository =
@@ -147,6 +146,7 @@ module Storage =
                     }
                 member ___.GetAsync(q) =
                     async {
+                        printfn "Elo"
                         return! mailbox.Value.PostAndAsyncReply(fun ch -> Search(q, ch))
                     }
             }

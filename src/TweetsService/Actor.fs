@@ -106,7 +106,7 @@ module Actor =
                     do! db.StoreAsync(Dto.TweetDto.FromTweet(tweet))
                     return! loop()
                 | Search q ->
-                    printfn "db"
+                    printfn "db %A" db
                     let! result = db.GetAsync(q)
                     printfn "Result %A" msg
                     if result |> Seq.isEmpty then
