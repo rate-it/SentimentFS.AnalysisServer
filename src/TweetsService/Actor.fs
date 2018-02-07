@@ -100,15 +100,12 @@ module Actor =
         let rec loop () =
             actor {
                 let! msg = mailbox.Receive()
-                printfn "%A" msg
                 match msg with
                 | Insert tweet ->
                     do! db.StoreAsync(Dto.TweetDto.FromTweet(tweet))
                     return! loop()
                 | Search q ->
-                    printfn "db %A" db
-                    let! result = db.GetAsync(q)
-                    printfn "Result %A" msg
+                    let result = db.GetAsync(q) |> Async.RunSynchronously
                     if result |> Seq.isEmpty then
                         mailbox.Sender() <! None
                     else

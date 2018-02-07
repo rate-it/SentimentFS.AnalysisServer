@@ -124,7 +124,6 @@ module Storage =
                     match msg with
                     | Search(s, reply) ->
                         let result = tweets |> List.filter(fun x -> x.Text.Contains(s.key)) |> List.map(TweetDto.ToTweet) |> List.toSeq
-                        printf "DB %A" result
                         reply.Reply(result)
                         return! loop(tweets)
                     | InsertTweets dto ->
@@ -146,7 +145,6 @@ module Storage =
                     }
                 member ___.GetAsync(q) =
                     async {
-                        printfn "Elo"
                         return! mailbox.Value.PostAndAsyncReply(fun ch -> Search(q, ch))
                     }
             }
