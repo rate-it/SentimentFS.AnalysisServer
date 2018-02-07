@@ -14,7 +14,7 @@ open Akka.Streams
 module Actors =
     open Common.Routing.ActorMetaData
     let tweetsActor = create("tweets", None)
-    let sentimentRouter = create("sentiment-router", None)
+    let sentimentRouter = create("sentiment", None)
     let twitterApiActor = create("twitter-api", None)
 
 module TwitterApi =
