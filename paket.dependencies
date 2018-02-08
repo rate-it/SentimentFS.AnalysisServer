@@ -28,6 +28,7 @@ nuget Akka.Serialization.Hyperion
 nuget Giraffe
 nuget Microsoft.AspNetCore.All
 nuget Fable.JsonConverter
+nuget Argu
 
 nuget xunit
 nuget FsUnit.xUnit >= 3.1.0-beta2
