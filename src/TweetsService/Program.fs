@@ -7,14 +7,25 @@ open SentimentFS.AnalysisServer.Common.Messages.Sentiment
 open SentimentFS.AnalysisServer.Common.Messages.Twitter
 open Akka.Routing
 open System
+open Argu
 
 type ServiceConfig =
     | AccessToken of accessToken: string
     | AccessTokenSecret of accessTokenSecret: string
     | ConsumerKey of key: string
     | ConsumerSecret of secret: string
-    | PostgresConnectionString of conn: string
-    | ElasticSearchConnection of conn: string
+    | [<NoCommandLine>] PostgresConnectionString of conn: string
+    | [<NoCommandLine>] ElasticSearchConnection of conn: string
+with
+    interface IArgParserTemplate with
+        member x.Usage =
+            match x with
+            | AccessToken _ -> "Twitter api access token"
+            | AccessTokenSecret _ -> "Twitter api accessTokenSecret"
+            | ConsumerKey _ -> "Twitter api consumer key"
+            | ConsumerSecret _ -> "Twitter api consumer secret"
+            | PostgresConnectionString _ -> "Postgres Connection String"
+            | ElasticSearchConnection _ -> "ElasticSearch Connection"
 
 module Program =
     open Akkling
@@ -22,6 +33,7 @@ module Program =
 
     [<EntryPoint>]
     let main argv =
+        let parser = ArgumentParser.Create<ServiceConfig>(programName = "gadget.exe")
         let system = System.create "sentimentfs" <| (Configuration.load())
         let db = Storage.get InMemory
         let actorProps = tweetsActor(db)
