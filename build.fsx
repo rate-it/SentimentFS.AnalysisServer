@@ -1,8 +1,7 @@
-(* -- Fake Dependencies paket-inline
-source https://api.nuget.org/v3/index.json
+#r "paket:
+nuget Fake.Core.Target prerelease"
+#load "./.fake/myscript.fsx/intellisense.fsx"
 
-nuget Fake.Core.Target
--- Fake Dependencies -- *)
 
 #load "./.fake/build.fsx/intellisense.fsx"
 
