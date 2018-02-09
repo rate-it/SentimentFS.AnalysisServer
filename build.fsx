@@ -2,15 +2,14 @@
 nuget Fake.Core.Target prerelease
 nuget Fake.IO.FileSystem
 nuget Fake.DotNet.MsBuild
-nuget Fake.Core.Globbing
-nuget Fake.Core.Target"
+nuget Fake.Core.Globbing"
 #load "./.fake/build.fsx/intellisense.fsx"
 
 open Fake.Core
 open Fake.IO
 // *** Define Targets ***
 Target.Create "Clean" (fun _ ->
-    Trace.log " --- Building the app --- "
+    Shell.CleanDirs ["bin"; "temp"]
 )
 
 Target.Create "Build" (fun _ ->
