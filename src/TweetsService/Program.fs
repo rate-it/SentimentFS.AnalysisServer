@@ -33,7 +33,9 @@ module Program =
 
     [<EntryPoint>]
     let main argv =
-        let parser = ArgumentParser.Create<ServiceConfig>(programName = "gadget.exe")
+        let parser = ArgumentParser.Create<ServiceConfig>(programName = "TweetsService.exe")
+        let result = parser.Parse()
+        printf "%A" result
         let system = System.create "sentimentfs" <| (Configuration.load())
         let db = Storage.get InMemory
         let actorProps = tweetsActor(db)
