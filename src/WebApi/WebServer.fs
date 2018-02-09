@@ -1,24 +1,17 @@
 namespace SentimentFS.AnalysisServer.WebApi
-open Akka.Cluster.Tools.Singleton
-open System.Threading
-open Giraffe.Tasks
 
 module WebServer =
     open SentimentFS.AnalysisServer.Common.Config
     open SentimentApi
     open Akka.Actor
-    open Giraffe.HttpHandlers
     open Akka.Configuration
-    open Api.Actor
     open SentimentFS.AnalysisServer.Common.Routing
     open System.IO
     open Microsoft.Extensions.Configuration
     open SentimentFS.AnalysisServer.Common.Messages.Sentiment
-    open Giraffe.Tasks
-    open Giraffe.HttpHandlers
-    open Giraffe.HttpContextExtensions
     open Microsoft.AspNetCore.Http
     open Akka.Routing
+    open Giraffe
 
     let app (config: IConfigurationRoot) =
         let akkaConfig = ConfigurationFactory.ParseString(File.ReadAllText("./akka.json"))

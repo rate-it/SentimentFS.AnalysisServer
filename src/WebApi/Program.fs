@@ -1,18 +1,17 @@
 ﻿namespace SentimentFS.AnalysisServer.WebApi
 
-open Akka.Actor
-open Akka.Configuration
 open System
 open System.IO
-open System.Collections.Generic
 open Microsoft.AspNetCore.Builder
 open Microsoft.AspNetCore.Cors.Infrastructure
 open Microsoft.AspNetCore.Hosting
-open Microsoft.AspNetCore.Http
 open Microsoft.Extensions.Logging
 open Microsoft.Extensions.DependencyInjection
-open Giraffe.HttpHandlers
 open Giraffe.Middleware
+open Giraffe.Core
+open Giraffe
+open Newtonsoft.Json
+open Giraffe.Serialization
 
 
 module Program =
@@ -46,8 +45,10 @@ module Program =
            .UseGiraffe(WebServer.app configuration)
 
     let configureServices (services : IServiceCollection) =
-        let sp  = services.BuildServiceProvider()
-        let env = sp.GetService<IHostingEnvironment>()
+        services.AddGiraffe() |> ignore
+        let jsonConverter = Fable.JsonConverter() :> JsonConverter
+        let settings = JsonSerializerSettings(Converters = [|jsonConverter|])
+        services.AddSingleton<IJsonSerializer>(NewtonsoftJsonSerializer(settings)) |> ignore
         services.AddCors() |> ignore
 
     let configureLogging (builder : ILoggingBuilder) =
