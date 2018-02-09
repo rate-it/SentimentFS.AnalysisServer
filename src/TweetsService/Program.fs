@@ -8,6 +8,14 @@ open SentimentFS.AnalysisServer.Common.Messages.Twitter
 open Akka.Routing
 open System
 
+type ServiceConfig =
+    | AccessToken of accessToken: string
+    | AccessTokenSecret of accessTokenSecret: string
+    | ConsumerKey of key: string
+    | ConsumerSecret of secret: string
+    | PostgresConnectionString of conn: string
+    | ElasticSearchConnection of conn: string
+
 module Program =
     open Akkling
     open Akka.Actor

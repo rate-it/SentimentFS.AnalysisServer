@@ -12,5 +12,6 @@ Akkling.Streams
 FsPickler
 TweetinviAPI
 NEST
-CassandraCSharpDriver
+Dapper
+Npgsql
 Argu
