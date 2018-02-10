@@ -1,5 +1,5 @@
 FROM mono:latest
-LABEL Name=sentimentfs.tweetsservice Version=0.0.1
+LABEL Name=sentimentfs.sentimentservice Version=0.0.1
 ARG source
 WORKDIR /app
 EXPOSE 5003

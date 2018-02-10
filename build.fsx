@@ -1,3 +1,4 @@
+open System
 #r "paket:
 nuget Fake.Core.Target prerelease
 nuget Fake.IO.FileSystem
@@ -44,6 +45,22 @@ Target.Create "Publish" (fun _ ->
     DotnetPublish (fun x -> { x with Configuration = Release; OutputPath = Some "./obj/Docker/publish" }) project
 )
 
+Target.Create "RemoveOldDockerImages" (fun _ ->
+    let result1 =
+        Process.ExecProcessAndReturnMessages(fun (info:Process.ProcStartInfo) ->
+            {info with
+                FileName = "docker"
+                Arguments = "rm $(docker ps -a -q) -f"}) (System.TimeSpan.FromMinutes 15.)
+
+    let result2 =
+        Process.ExecProcessAndReturnMessages(fun (info:Process.ProcStartInfo) ->
+            {info with
+                FileName = "docker"
+                Arguments = """rmi $(docker images --filter=reference="sentimentfs*" -q) -f"""}) (System.TimeSpan.FromMinutes 15.)
+
+    if result1.ExitCode <> 0  || result2.ExitCode <> 0 then failwith "RemoveOldDockerImages failed"
+)
+
 
 open Fake.Core.TargetOperators
 
@@ -54,6 +71,7 @@ open Fake.Core.TargetOperators
   ==> "Restore"
   ==> "Build"
   ==> "Publish"
+  ==> "RemoveOldDockerImages"
 
 // *** Start Build ***
-Target.RunOrDefault "Publish"
+Target.RunOrDefault "RemoveOldDockerImages"
