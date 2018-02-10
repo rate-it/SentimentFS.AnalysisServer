@@ -45,18 +45,18 @@ Target.Create "Publish" (fun _ ->
     DotnetPublish (fun x -> { x with Configuration = Release; OutputPath = Some "./obj/Docker/publish" }) project
 )
 
-Target.Create "RemoveOldDockerImages" (fun _ ->
+Target.Create "CreateDockerImage" (fun _ ->
     let result1 =
         Process.ExecProcessAndReturnMessages(fun (info:Process.ProcStartInfo) ->
             {info with
                 FileName = "docker"
-                Arguments = "rm $(docker ps -a -q) -f"}) (System.TimeSpan.FromMinutes 15.)
+                Arguments = "ps -a -q | % { docker rm $_ }"}) (System.TimeSpan.FromMinutes 15.)
 
     let result2 =
         Process.ExecProcessAndReturnMessages(fun (info:Process.ProcStartInfo) ->
             {info with
                 FileName = "docker"
-                Arguments = """rmi $(docker images --filter=reference="sentimentfs*" -q) -f"""}) (System.TimeSpan.FromMinutes 15.)
+                Arguments = """images -q | % { docker rmi --filter=reference="sentimentfs*"  }"""}) (System.TimeSpan.FromMinutes 15.)
 
     if result1.ExitCode <> 0  || result2.ExitCode <> 0 then failwith "RemoveOldDockerImages failed"
 )

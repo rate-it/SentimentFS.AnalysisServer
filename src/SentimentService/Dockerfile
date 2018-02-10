@@ -4,4 +4,4 @@ ARG source
 WORKDIR /app
 EXPOSE 5003
 COPY ${source:-obj/Docker/publish} .
-ENTRYPOINT ["mono", "Banners.Api.dll"]
+ENTRYPOINT ["mono", "SentimentService.exe"]
