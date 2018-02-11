@@ -1,4 +1,27 @@
 version: '3'
 services:
+  webapi:
+    image: sentimentfs.webapi
+    build:
+        context: ./src/WebApi
+        dockerfile: Dockerfile
+    ports:
+         - "5000:80"
+         - "5001:5001"
+    environment:
+        - ASPNETCORE_ENVIRONMENT=Production
+    networks:
+        - sentimentfs
+  sentimentservice:
+    image: sentimentfs.sentimentservice
+    build:
+        context: ./src/SentimentService
+        dockerfile: Dockerfile
+    depends_on:
+        - "webapi"
   redis:
     image: "redis:alpine"
+
+networks:
+    sentimentfs:
+        driver: bridge
