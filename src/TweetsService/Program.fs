@@ -39,7 +39,7 @@ module Program =
         let system = System.create "sentimentfs" <| (Configuration.load())
         let db = Storage.get InMemory
         let actorProps = tweetsActor(db)
-        let sentimentactor = spawn system Actors.sentimentRouter.Name <| Props<SentimentMessage>.From(Props.Empty.WithRouter(FromConfig.Instance))
+        spawn system Actors.sentimentRouter.Name <| Props<SentimentMessage>.From(Props.Empty.WithRouter(FromConfig.Instance)) |> ignore
         //let twitterApiActor = spawn system Actors.twitterApiActor.Name props()
         let actor = spawn system Actors.tweetsActor.Name <| props (actorProps)
 
@@ -49,5 +49,5 @@ module Program =
             return ()
         } |> Async.RunSynchronously
         printfn "Hello World from F#!"
-        Console.ReadKey()
+        Console.ReadKey() |> ignore
         0 // return an integer exit code

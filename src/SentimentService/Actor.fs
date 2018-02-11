@@ -5,14 +5,10 @@ module Actor =
     open SentimentFS.NaiveBayes.Dto
     open SentimentFS.TextUtilities
     open SentimentFS.Stemmer.Stemmer
-    open Akka.Actor
     open Akkling
     open Akkling.Persistence
     open SentimentFS.NaiveBayes.Training
     open SentimentFS.NaiveBayes.Classification
-    open System.Net.Http
-    open Newtonsoft.Json
-    open System.Collections.Generic
 
     let stopWords = """a about above after again against all am an and any are aren't as at be
       because been before being below between both but by can't cannot could
