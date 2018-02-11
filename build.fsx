@@ -13,6 +13,7 @@ open Fake.DotNet.Cli
 open Fake.Core.Globbing.Operators
 
 let solutionFile = "./SentimentFS.AnalysisServer.sln"
+let dockerComposeFileName = "docker-compose.yml"
 let dockerProjects = [ "./src/SentimentService/SentimentService.fsproj"; "./src/TweetsService/TweetsService.fsproj"; "./src/WebApi/WebApi.fsproj" ]
 let dockerImages = ["sentimentfs.webapi"; "sentimentfs.sentimentservice" ]
 // *** Define Targets ***
@@ -46,7 +47,7 @@ Target.Create "Publish" (fun _ ->
     DotnetPublish (fun x -> { x with Configuration = Release; OutputPath = Some "./obj/Docker/publish" }) project
 )
 
-Target.Create "CreateDockerImage" (fun _ ->
+Target.Create "RemoveOldDockerImages" (fun _ ->
     for dockerImage in dockerImages do
         let result1 =
             Process.ExecProcessAndReturnMessages(fun (info:Process.ProcStartInfo) ->
@@ -64,6 +65,28 @@ Target.Create "CreateDockerImage" (fun _ ->
 )
 
 
+Target.Create "DockerComposeBuild" (fun _ ->
+    let result =
+        Process.ExecProcessAndReturnMessages(fun (info:Process.ProcStartInfo) ->
+            {info with
+                FileName = "docker-compose"
+                Arguments = sprintf "-f %s build" dockerComposeFileName}) (System.TimeSpan.FromMinutes 15.)
+
+    if result.ExitCode <> 0 then failwith "Docker Compose up failed"
+)
+
+
+Target.Create "DockerComposeUp" (fun _ ->
+    let result =
+        Process.ExecProcessAndReturnMessages(fun (info:Process.ProcStartInfo) ->
+            {info with
+                FileName = "docker-compose"
+                Arguments = sprintf "-f %s up" dockerComposeFileName}) (System.TimeSpan.FromMinutes 15.)
+
+    if result.ExitCode <> 0 then failwith "Docker Compose up failed"
+)
+
+
 open Fake.Core.TargetOperators
 
 // *** Define Dependencies ***
@@ -74,6 +97,8 @@ open Fake.Core.TargetOperators
   ==> "Build"
   ==> "Publish"
   ==> "RemoveOldDockerImages"
+  ==> "DockerComposeBuild"
+  ==> "DockerComposeUp"
 
 // *** Start Build ***
-Target.RunOrDefault "RemoveOldDockerImages"
+Target.RunOrDefault "DockerComposeUp"
