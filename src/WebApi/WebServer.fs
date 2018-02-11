@@ -22,4 +22,5 @@ module WebServer =
         actorSystem.ActorOf(Props.Empty.WithRouter(FromConfig.Instance), Actors.router.Name) |> ignore
         choose [
             sentimentController actorSystem
+            GET >=> route "/ping" >=> text "pong"
         ]
