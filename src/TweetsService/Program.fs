@@ -32,7 +32,7 @@ module Program =
     open Akka.Actor
 
     [<EntryPoint>]
-    let main argv =
+    let main _ =
         let parser = ArgumentParser.Create<ServiceConfig>(programName = "TweetsService.exe")
         let result = parser.Parse()
         printf "%A" result
