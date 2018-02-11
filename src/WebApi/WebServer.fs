@@ -19,7 +19,7 @@ module WebServer =
         config.Bind(appconfig) |> ignore
         let actorSystem = ActorSystem.Create("sentimentfs", akkaConfig)
         printfn "Cluster Node Address %A" ((actorSystem :?> ExtendedActorSystem).Provider.DefaultAddress)
-        let router = actorSystem.ActorOf(Props.Empty.WithRouter(FromConfig.Instance), Actors.router.Name)
+        actorSystem.ActorOf(Props.Empty.WithRouter(FromConfig.Instance), Actors.router.Name) |> ignore
         choose [
             sentimentController actorSystem
         ]
