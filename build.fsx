@@ -14,6 +14,7 @@ open Fake.Core.Globbing.Operators
 
 let solutionFile = "./SentimentFS.AnalysisServer.sln"
 let dockerProjects = [ "./src/SentimentService/SentimentService.fsproj"; "./src/TweetsService/TweetsService.fsproj"; "./src/WebApi/WebApi.fsproj" ]
+let dockerImages = ["sentimentfs.webapi"; "sentimentfs.sentimentservice" ]
 // *** Define Targets ***
 Target.Create "Clean" (fun _ ->
     !! "src/*/*/bin" |> Shell.CleanDirs
@@ -46,19 +47,20 @@ Target.Create "Publish" (fun _ ->
 )
 
 Target.Create "CreateDockerImage" (fun _ ->
-    let result1 =
-        Process.ExecProcessAndReturnMessages(fun (info:Process.ProcStartInfo) ->
-            {info with
-                FileName = "docker"
-                Arguments = "ps -a -q | % { docker rm $_ }"}) (System.TimeSpan.FromMinutes 15.)
+    for dockerImage in dockerImages do
+        let result1 =
+            Process.ExecProcessAndReturnMessages(fun (info:Process.ProcStartInfo) ->
+                {info with
+                    FileName = "docker"
+                    Arguments = sprintf "ps -a -q | %% { docker rm %s }" dockerImage}) (System.TimeSpan.FromMinutes 15.)
 
-    let result2 =
-        Process.ExecProcessAndReturnMessages(fun (info:Process.ProcStartInfo) ->
-            {info with
-                FileName = "docker"
-                Arguments = """images -q | % { docker rmi --filter=reference="sentimentfs*"  }"""}) (System.TimeSpan.FromMinutes 15.)
+        let result2 =
+            Process.ExecProcessAndReturnMessages(fun (info:Process.ProcStartInfo) ->
+                {info with
+                    FileName = "docker"
+                    Arguments = sprintf """images -q | %% { docker rmi %s  }""" dockerImage}) (System.TimeSpan.FromMinutes 15.)
 
-    if result1.ExitCode <> 0  || result2.ExitCode <> 0 then failwith "RemoveOldDockerImages failed"
+        if result1.ExitCode <> 0  || result2.ExitCode <> 0 then failwith "RemoveOldDockerImages failed"
 )
 
 
