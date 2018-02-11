@@ -47,21 +47,14 @@ Target.Create "Publish" (fun _ ->
     DotnetPublish (fun x -> { x with Configuration = Release; OutputPath = Some "./obj/Docker/publish" }) project
 )
 
-Target.Create "RemoveOldDockerImages" (fun _ ->
-    for dockerImage in dockerImages do
-        let result1 =
-            Process.ExecProcessAndReturnMessages(fun (info:Process.ProcStartInfo) ->
-                {info with
-                    FileName = "docker"
-                    Arguments = sprintf "ps -a -q | %% { docker rm %s }" dockerImage}) (System.TimeSpan.FromMinutes 15.)
+Target.Create "DockerComposeRemove" (fun _ ->
+    let result =
+        Process.ExecProcessAndReturnMessages(fun (info:Process.ProcStartInfo) ->
+            {info with
+                FileName = "docker-compose"
+                Arguments = "rm -f"}) (System.TimeSpan.FromMinutes 15.)
 
-        let result2 =
-            Process.ExecProcessAndReturnMessages(fun (info:Process.ProcStartInfo) ->
-                {info with
-                    FileName = "docker"
-                    Arguments = sprintf """images -q | %% { docker rmi %s  }""" dockerImage}) (System.TimeSpan.FromMinutes 15.)
-
-        if result1.ExitCode <> 0  || result2.ExitCode <> 0 then failwith "RemoveOldDockerImages failed"
+    if result.ExitCode <> 0 then failwith "Docker Compose up failed"
 )
 
 
@@ -96,7 +89,7 @@ open Fake.Core.TargetOperators
   ==> "Restore"
   ==> "Build"
   ==> "Publish"
-  ==> "RemoveOldDockerImages"
+  ==> "DockerComposeRemove"
   ==> "DockerComposeBuild"
   ==> "DockerComposeUp"
 
