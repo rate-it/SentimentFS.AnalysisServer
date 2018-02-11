@@ -12,6 +12,15 @@ services:
         - ASPNETCORE_ENVIRONMENT=Production
     networks:
         - sentimentfs
+  sentimentservice:
+    image: sentimentfs.sentimentservice
+    build:
+        context: ./src/SentimentService
+        dockerfile: Dockerfile
+    depends_on:
+        - "webapi"
+    ports:
+        - "5002:5002"
 
 networks:
     sentimentfs:
