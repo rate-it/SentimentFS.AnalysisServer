@@ -48,7 +48,7 @@ module Twitter =
 
     type Tweets = { tweets: Tweet seq }
 
-    type SearchTweets = { key: string; since: DateTime; quantity: int }
+    type SearchTweets = { key: string; since: DateTime option; quantity: int option }
 
 
     type TwitterApiActorMessage =
@@ -60,4 +60,6 @@ module Twitter =
         | Insert of Tweet
         | Search of SearchTweets
 
+    type TweetsActorMessage =
+        | SearchByKey of key: string
 

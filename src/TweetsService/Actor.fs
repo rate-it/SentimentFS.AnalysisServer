@@ -27,8 +27,8 @@ module TwitterApi =
             options.SearchType <- Nullable<SearchResultType>(SearchResultType.Recent)
             options.Lang <- Nullable<LanguageFilter>(LanguageFilter.English)
             options.Filters <- TweetSearchFilters.None
-            options.MaximumNumberOfResults <- q.quantity
-            options.Since <- q.since
+            options.MaximumNumberOfResults <- 10
+            options.Since <- DateTime.Now
             return! SearchAsync.SearchTweets(options) |> Async.AwaitTask
         }
 
@@ -78,3 +78,12 @@ module Actor =
             }
         loop([])
 
+    let tweetMasterActor(mailbox: Actor<TweetsActorMessage>) =
+        let rec loop () =
+            actor {
+                let! msg = mailbox.Receive()
+                match msg with
+                | SearchByKey key ->
+                    return! loop()
+            }
+        loop()

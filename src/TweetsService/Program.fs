@@ -42,7 +42,7 @@ module Program =
         let actor = spawn system Actors.tweetsActor.Name <| props (inMemoryTweetsStorageActor)
 
         async {
-            let! res = actor <? Search { key = "dupa"; since = DateTime.Now; quantity = 100  }
+            let! res = actor <? Search { key = "dupa"; since = Some DateTime.Now; quantity = Some 100  }
             printfn "%A" res
             return ()
         } |> Async.RunSynchronously
