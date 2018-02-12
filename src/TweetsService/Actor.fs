@@ -9,8 +9,6 @@ open Tweetinvi.Models
 open Tweetinvi
 open SentimentFS.AnalysisServer.Common.Messages.Sentiment
 open Akkling
-open Akka.Streams
-open Akka.Streams
 
 module Actors =
     open Common.Routing.ActorMetaData
