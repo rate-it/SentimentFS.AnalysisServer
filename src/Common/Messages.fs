@@ -50,14 +50,13 @@ module Twitter =
 
     type SearchTweets = { key: string; since: DateTime; quantity: int }
 
-    type TweetsCommands =
-        | Add of Tweet
-        | Search of key: string
 
-    type TwitterApiMessage =
+    type TwitterApiActorMessage =
         | ApiSearch of SearchTweets
+        | Receive of Tweet
+        | Complete
 
-    type TweetsMessage =
+    type TweetsStorageActorMessage =
         | Insert of Tweet
         | Search of SearchTweets
 
