@@ -37,11 +37,9 @@ module Program =
         let result = parser.Parse()
         printf "%A" result
         let system = System.create "sentimentfs" <| (Configuration.load())
-        let db = Storage.get InMemory
-        let actorProps = tweetsActor(db)
         spawn system Actors.sentimentRouter.Name <| Props<SentimentMessage>.From(Props.Empty.WithRouter(FromConfig.Instance)) |> ignore
         //let twitterApiActor = spawn system Actors.twitterApiActor.Name props()
-        let actor = spawn system Actors.tweetsActor.Name <| props (actorProps)
+        let actor = spawn system Actors.tweetsActor.Name <| props (inMemoryTweetsStorageActor)
 
         async {
             let! res = actor <? Search { key = "dupa"; since = DateTime.Now; quantity = 100  }

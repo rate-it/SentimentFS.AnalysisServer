@@ -60,58 +60,23 @@ module TwitterApi =
                                                                 )
 
 module Actor =
-    open TwitterApi
+    open Dto
     type Config = { credentials: TwitterCredentials; }
 
-    let twitterApiActor(config: Config)(mailbox: Actor<TwitterApiActorMessage>) =
-        let apiSource = Source.actorRef(OverflowStrategy.DropNew)(5000)
-        let resultSink = Sink.toActorRef (Complete)(mailbox.Self)
-        let graph system = apiSource
-                            |> Graph.create1 (fun builder s ->
-                                            let sentimentActor:TypedActorSelection<SentimentMessage> = select system (Actors.sentimentRouter.Path)
-                                            let downloadTweetsFlow = downloadTweetsFlow(MaxConcurrentDownloads)(config.credentials) |> builder.Add
-                                            let sentimentFlow = sentimentFlow(MaxConcurrentDownloads)(sentimentActor) |> builder.Add
-                                            builder.From(s.Outlet).To(downloadTweetsFlow.Inlet) |> ignore
-                                            builder.From(downloadTweetsFlow.Outlet).Via(sentimentFlow).Via(Flow.id |> Flow.map(Receive)).To(resultSink) |> ignore
-                                            ClosedShape.Instance
-                                        )
-        let twitter = graph(mailbox.System) |> Graph.runnable |> Graph.run (mailbox.Materializer())
-
-        let rec loop() =
-            actor {
-                let! msg = mailbox.Receive()
-                match msg with
-                | ApiSearch search ->
-                    twitter <! search
-                | Receive tweet ->
-                    let sentimentActor:TypedActorSelection<SentimentMessage> = select mailbox.System (Actors.sentimentRouter.Path)
-                    let tweetsActor: TypedActorSelection<TweetsStorageActorMessage> = select mailbox.System (Actors.tweetsActor.Path)
-                    sentimentActor <! SentimentCommand(Train({ value = tweet.Text; category = defaultArg tweet.Sentiment Emotion.Neutral; weight = None  }))
-                    tweetsActor <! Insert tweet
-                | Complete ->
-                    return loop()
-                return loop()
-            }
-        loop()
-
-    let tweetsActor (db: ITweetsRepository)(mailbox: Actor<TweetsStorageActorMessage>) =
-        let rec loop () =
+    let inMemoryTweetsStorageActor(mailbox: Actor<TweetsStorageActorMessage>) =
+        let rec loop (tweets: TweetDto list) =
             actor {
                 let! msg = mailbox.Receive()
                 match msg with
                 | Insert tweet ->
-                    do! db.StoreAsync(Dto.TweetDto.FromTweet(tweet))
-                    return! loop()
+                    return! loop(Dto.TweetDto.FromTweet(tweet) :: tweets)
                 | Search q ->
-                    let result = db.GetAsync(q) |> Async.RunSynchronously
+                    let result = tweets |> List.filter(fun x -> x.Text.Contains(q.key)) |> List.map(TweetDto.ToTweet) |> List.toSeq
                     if result |> Seq.isEmpty then
                         mailbox.Sender() <! None
                     else
                         mailbox.Sender() <! Some result
-                    return! loop()
-                return! loop()
+                    return! loop(tweets)
             }
-        loop()
-
-
+        loop([])
 
