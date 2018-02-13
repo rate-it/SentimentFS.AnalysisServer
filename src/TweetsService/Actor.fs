@@ -78,6 +78,22 @@ module Actor =
             }
         loop([])
 
+    let postgresTweetsStorageActor(mailbox: Actor<TweetsStorageActorMessage>)(connectionString: string) =
+        let rec loop (tweets: TweetDto list) =
+            actor {
+                let! msg = mailbox.Receive()
+                match msg with
+                | Insert tweet ->
+                    return! loop(Dto.TweetDto.FromTweet(tweet) :: tweets)
+                | Search q ->
+                    let result = tweets |> List.filter(fun x -> x.Text.Contains(q.key)) |> List.map(TweetDto.ToTweet) |> List.toSeq
+                    if result |> Seq.isEmpty then
+                        mailbox.Sender() <! None
+                    else
+                        mailbox.Sender() <! Some result
+                    return! loop(tweets)
+            }
+        loop([])
     let tweetMasterActor(mailbox: Actor<TweetsActorMessage>) =
         let rec loop () =
             actor {

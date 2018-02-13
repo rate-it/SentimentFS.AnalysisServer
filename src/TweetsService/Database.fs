@@ -44,6 +44,13 @@ module Dto =
                                   Sentiment = Emotion.Neutral }
 open Dto
 
+module Postgres =
+    open Dapper
+    open System.Data.Common
+
+    let insertTweet (connection: #DbConnection)(tweet: TweetDto) = 2
+
+
 module Elastic =
     open Nest
     open Dto
