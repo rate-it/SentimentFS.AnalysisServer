@@ -32,19 +32,6 @@ module TwitterApi =
             return! SearchAsync.SearchTweets(options) |> Async.AwaitTask
         }
 
-    let downloadTweetsFlow (maxConcurrentDownloads: int)(credentials: TwitterCredentials) =
-        Flow.id
-        |> Flow.asyncMapUnordered(maxConcurrentDownloads)(downloadTweetsFromApi)
-        |> Flow.collect(id)
-        |> Flow.filter(fun tweet -> not tweet.IsRetweet)
-        |> Flow.map(fun tweet ->
-                        { IdStr = tweet.IdStr;
-                          Text = tweet.Text;
-                          Language = tweet.Language.ToString();
-                          CreationDate = tweet.CreatedAt;
-                          Coordinates = match tweet.Coordinates with null -> None | coord -> Some { Longitude = coord.Longitude; Latitude = coord.Latitude };
-                          HashTags = (tweet.Hashtags |> Seq.map(fun x -> x.Text))
-                          Sentiment = None })
 
 
     let sentimentFlow (maxConcurentSentimentRequest)(sentimentActor: ICanTell<SentimentMessage>) =
@@ -67,7 +54,26 @@ module Actor =
                 let! msg = mailbox.Receive()
                 match msg with
                 | ApiSearch search ->
-                    let a = Source.async
+                    let sentimentActor:TypedActorSelection<SentimentMessage> = select mailbox.System (Actors.sentimentRouter.Path)
+                    let tweets =
+                        Source.ofAsync (TwitterApi.downloadTweetsFromApi search)
+                            |> Source.collect(id)
+                            |> Source.filter(fun tweet -> not tweet.IsRetweet)
+                            |> Source.map(fun tweet -> { IdStr = tweet.IdStr;
+                                                         Text = tweet.Text;
+                                                         Language = tweet.Language.ToString();
+                                                         CreationDate = tweet.CreatedAt;
+                                                         Coordinates = match tweet.Coordinates with null -> None | coord -> Some { Longitude = coord.Longitude; Latitude = coord.Latitude };
+                                                         HashTags = (tweet.Hashtags |> Seq.map(fun x -> x.Text))
+                                                         Sentiment = None })
+                            |> Source.asyncMapUnordered(500)(fun tweet ->
+                                                                    async {
+                                                                        let! s = sentimentActor <? SentimentCommand(Classify({ text = tweet.Text }))
+                                                                        let r = s.score |> Array.maxBy(fun res -> res.probability)
+                                                                        return { tweet with Sentiment = Some r.emotion }
+                                                                    }
+                                                                )
+                    return loop()
             }
         loop()
 
