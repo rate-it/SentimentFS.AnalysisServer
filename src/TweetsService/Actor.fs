@@ -61,6 +61,16 @@ module Actor =
     open Dto
     type Config = { credentials: TwitterCredentials; }
 
+    let twitterApiActor(config: Config)(mailbox: Actor<TwitterApiActorMessage>) =
+        let rec loop () =
+            actor {
+                let! msg = mailbox.Receive()
+                match msg with
+                | ApiSearch search ->
+                    let a = Source.async
+            }
+        loop()
+
     let inMemoryTweetsStorageActor(mailbox: Actor<TweetsStorageActorMessage>) =
         let rec loop (tweets: TweetDto list) =
             actor {

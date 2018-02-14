@@ -53,8 +53,6 @@ module Twitter =
 
     type TwitterApiActorMessage =
         | ApiSearch of SearchTweets
-        | Receive of Tweet
-        | Complete
 
     type TweetsStorageActorMessage =
         | Insert of Tweet
