@@ -65,6 +65,7 @@ module Actor =
                                                          CreationDate = tweet.CreatedAt;
                                                          Coordinates = match tweet.Coordinates with null -> None | coord -> Some { Longitude = coord.Longitude; Latitude = coord.Latitude };
                                                          HashTags = (tweet.Hashtags |> Seq.map(fun x -> x.Text))
+                                                         User = tweet.CreatedBy.UserDTO.Name
                                                          Sentiment = None })
                             |> Source.asyncMapUnordered(500)(fun tweet ->
                                                                     async {

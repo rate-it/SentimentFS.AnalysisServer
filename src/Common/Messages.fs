@@ -38,12 +38,16 @@ module Twitter =
     open Sentiment
 
     type Coordinates = { Longitude: double; Latitude: double }
+
+    type TwitterUser = string
+
     type Tweet = { IdStr: string
                    Text: string
                    HashTags: string seq
                    CreationDate: DateTime
                    Language: string
                    Coordinates: Coordinates option
+                   User: TwitterUser
                    Sentiment: Emotion option }
 
     type Tweets = { tweets: Tweet seq }

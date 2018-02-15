@@ -14,6 +14,7 @@ module Dto =
                       Lang: string
                       Longitude: double
                       Latitude: double
+                      TwitterUser: string
                       Sentiment: Emotion } with
         static member FromTweet(x: Tweet) =
             { IdStr = x.IdStr
@@ -23,6 +24,7 @@ module Dto =
               Lang = x.Language
               Longitude = match x.Coordinates with | Some c -> c.Longitude | None -> 0.0
               Latitude = match x.Coordinates with | Some c -> c.Latitude | None -> 0.0
+              TwitterUser = x.User
               Sentiment = defaultArg x.Sentiment Emotion.Neutral
             }
         static member ToTweet(x: TweetDto):Tweet =
@@ -32,6 +34,7 @@ module Dto =
               CreationDate = x.Date
               Language = x.Lang
               Coordinates = if x.Longitude = 0.0 && x.Latitude = 0.0 then None else Some { Longitude = x.Longitude; Latitude = x.Latitude }
+              User = x.TwitterUser
               Sentiment = Some x.Sentiment
             }
         static member Zero () = { IdStr = ""
@@ -41,6 +44,7 @@ module Dto =
                                   Lang = ""
                                   Longitude = 0.0
                                   Latitude = 0.0
+                                  TwitterUser = ""
                                   Sentiment = Emotion.Neutral }
 open Dto
 
