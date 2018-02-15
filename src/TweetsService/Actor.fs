@@ -9,6 +9,7 @@ open Tweetinvi.Models
 open Tweetinvi
 open SentimentFS.AnalysisServer.Common.Messages.Sentiment
 open Akkling
+open Akkling.Streams
 
 module Actors =
     open Common.Routing.ActorMetaData
@@ -55,7 +56,7 @@ module Actor =
                 match msg with
                 | ApiSearch search ->
                     let sentimentActor:TypedActorSelection<SentimentMessage> = select mailbox.System (Actors.sentimentRouter.Path)
-                    let tweets =
+                    let! tweets =
                         Source.ofAsync (TwitterApi.downloadTweetsFromApi search)
                             |> Source.collect(id)
                             |> Source.filter(fun tweet -> not tweet.IsRetweet)
@@ -74,6 +75,9 @@ module Actor =
                                                                         return { tweet with Sentiment = Some r.emotion }
                                                                     }
                                                                 )
+                            |> Source.runWith (mailbox.System.Materializer()) (Sink.fold ([]) ( fun acc x -> x :: acc))
+
+                    mailbox.Sender() <! tweets
                     return loop()
             }
         loop()
