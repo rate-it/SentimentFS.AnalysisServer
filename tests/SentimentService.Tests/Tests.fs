@@ -1,6 +1,4 @@
 namespace SentimentFS.AnalysisServer.SentimentService
-open FsUnit.Xunit
-
 module Tests =
 
     open System
@@ -12,6 +10,7 @@ module Tests =
     open SentimentFS.AnalysisServer.SentimentService.Actor
     open Akkling.Persistence.Props
     open Akkling
+    open Swensen
 
     [<Fact>]
     let ``Sentiment actor only training``() = testDefault <| fun tck ->
@@ -31,7 +30,7 @@ module Tests =
         actor <! SentimentCommand(Train({ value = negativeText; category = Emotion.Negative; weight = None }))
         actor <! SentimentCommand(Classify({ text = "My brother love fsharp" }))
         let result = tck.ExpectMsg<ClassificationResult>()
-        (result.score |> Array.find(fun x -> x.emotion = Emotion.Positive))  |> should be (greaterThan ((result.score |> Array.find(fun x -> x.emotion = Emotion.Negative))))
+        Swensen.Unquote.Assertions.test <@ (result.score |> Array.find(fun x -> x.emotion = Emotion.Positive))  > (result.score |> Array.find(fun x -> x.emotion = Emotion.Negative)) @>
 
     [<Fact>]
     let ``Sentiment actor negative text`` () = testDefault <| fun tck ->
@@ -42,14 +41,14 @@ module Tests =
         actor <! SentimentCommand(Train({ value = negativeText; category = Emotion.Negative; weight = None }))
         actor <! SentimentCommand(Classify({ text = "My brother hate java" }))
         let result = tck.ExpectMsg<ClassificationResult>()
-        (result.score |> Array.find(fun x -> x.emotion = Emotion.Negative))  |> should be (greaterThan ((result.score |> Array.find(fun x -> x.emotion = Emotion.Positive))))
+        Swensen.Unquote.Assertions.test <@ (result.score |> Array.find(fun x -> x.emotion = Emotion.Negative))  > (result.score |> Array.find(fun x -> x.emotion = Emotion.Positive)) @>
 
     [<Fact>]
     let ``Get state when actor has no any training`` () = testDefault <| fun tck ->
         let actor = spawn tck "sentiment" (propsPersist (sentimentActor(None)))
         actor <! SentimentCommand(GetState)
         let result = tck.ExpectMsg<ClassificatorState>()
-        result.tokens.IsEmpty |> should be True
+        Swensen.Unquote.Assertions.test <@ result.tokens.IsEmpty = true @>
 
 
     [<Fact>]
@@ -61,4 +60,4 @@ module Tests =
         actor <! SentimentCommand(Train({ value = negativeText; category = Emotion.Negative; weight = None }))
         actor <! SentimentCommand(GetState)
         let result = tck.ExpectMsg<ClassificatorState>()
-        result.tokens.IsEmpty |> should be False
+        Swensen.Unquote.Assertions.test <@ result.tokens.IsEmpty = false @>
