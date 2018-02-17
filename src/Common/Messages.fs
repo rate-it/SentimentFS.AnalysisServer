@@ -59,9 +59,11 @@ module Twitter =
         | ApiSearch of SearchTweets
 
     type TweetsStorageActorMessage =
-        | Insert of Tweet
+        | InsertOne of Tweet
+        | InsertMany of Tweet list
         | Search of SearchTweets
 
     type TweetsActorMessage =
         | SearchByKey of key: string
+        | Save of Tweet list
 

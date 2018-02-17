@@ -87,8 +87,10 @@ module Actor =
             actor {
                 let! msg = mailbox.Receive()
                 match msg with
-                | Insert tweet ->
+                | InsertOne tweet ->
                     return! loop(Dto.TweetDto.FromTweet(tweet) :: tweets)
+                | InsertMany tweetList ->
+                    return! loop((tweetList |> List.map(fun tweet -> Dto.TweetDto.FromTweet(tweet))) @ tweets)
                 | Search q ->
                     let result = tweets |> List.filter(fun x -> x.Text.Contains(q.key)) |> List.map(TweetDto.ToTweet) |> List.toSeq
                     if result |> Seq.isEmpty then
@@ -99,13 +101,15 @@ module Actor =
             }
         loop([])
 
-    let postgresTweetsStorageActor(mailbox: Actor<TweetsStorageActorMessage>)(connectionString: string) =
+    let postgresTweetsStorageActor(connectionString: string)(mailbox: Actor<TweetsStorageActorMessage>) =
         let rec loop (tweets: TweetDto list) =
             actor {
                 let! msg = mailbox.Receive()
                 match msg with
-                | Insert tweet ->
+                | InsertOne tweet ->
                     return! loop(Dto.TweetDto.FromTweet(tweet) :: tweets)
+                | InsertMany tweetList ->
+                    return! loop((tweetList |> List.map(fun tweet -> Dto.TweetDto.FromTweet(tweet))) @ tweets)
                 | Search q ->
                     let result = tweets |> List.filter(fun x -> x.Text.Contains(q.key)) |> List.map(TweetDto.ToTweet) |> List.toSeq
                     if result |> Seq.isEmpty then
@@ -115,12 +119,26 @@ module Actor =
                     return! loop(tweets)
             }
         loop([])
-    let tweetMasterActor(mailbox: Actor<TweetsActorMessage>) =
+
+    let tweetsMasterActor(readActorProps: Props<TweetsStorageActorMessage>)(writeActorsProps: Props<TweetsStorageActorMessage> list)(mailbox: Actor<TweetsActorMessage>) =
+        let tweetReadActor = spawnAnonymous mailbox.System readActorProps
+        let writeActors = writeActorsProps |> List.map(fun prop -> spawnAnonymous mailbox.System prop)
         let rec loop () =
             actor {
                 let! msg = mailbox.Receive()
                 match msg with
                 | SearchByKey key ->
+                    let! tweetsOpt = tweetReadActor <? TweetsStorageActorMessage.Search({ key = key; since = None; quantity = None })
+                    match tweetsOpt with
+                    | Some tweets ->
+                        mailbox.Sender() <! tweets
+                    | None ->
+                        mailbox.Sender() <! Seq.empty
                     return! loop()
+                | Save tweets ->
+                    for writeActor in writeActors do
+                        writeActor <! InsertMany tweets
+                    return loop()
+
             }
         loop()
