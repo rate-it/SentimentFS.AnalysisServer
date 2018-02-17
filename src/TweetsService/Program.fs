@@ -8,6 +8,7 @@ open SentimentFS.AnalysisServer.Common.Messages.Twitter
 open Akka.Routing
 open System
 open Argu
+open SentimentFS.AnalysisServer.Common.Dto.TwitterApi
 
 type ServiceConfig =
     | AccessToken of accessToken: string
@@ -35,11 +36,12 @@ module Program =
     let main _ =
         let parser = ArgumentParser.Create<ServiceConfig>(programName = "TweetsService.exe")
         let result = parser.Parse()
-        printf "%A" result
+        let cosnumerKey = result.GetResult(ConsumerKey, defaultValue = "")
+        let twitterCredentials = Tweetinvi.Models.TwitterCredentials((result.GetResult ConsumerKey), result.GetResult ConsumerSecret, result.GetResult AccessToken, result.GetResult AccessTokenSecret)
         let system = System.create "sentimentfs" <| (Configuration.load())
         spawn system Actors.sentimentRouter.Name <| Props<SentimentMessage>.From(Props.Empty.WithRouter(FromConfig.Instance)) |> ignore
         let imMemoryStorageActorProps = props(inMemoryTweetsStorageActor)
-        //let twitterApiActor = spawn system Actors.twitterApiActor.Name props()
+        let twitterApiActor = spawn system Actors.twitterApiActor.Name <| props(twitterApiActor({ credentials = new Tweetinvi.Models.TwitterCredentials() }))
         let actor = spawn system Actors.tweetsActor.Name <| props (tweetsMasterActor (imMemoryStorageActorProps)([imMemoryStorageActorProps]))
 
         async {

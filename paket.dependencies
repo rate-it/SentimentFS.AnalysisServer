@@ -29,10 +29,9 @@ nuget Akka.Serialization.Hyperion
 nuget Giraffe
 nuget Microsoft.AspNetCore.All
 nuget Fable.JsonConverter
-nuget Argu
+nuget Argu >= 5.0.1
 
 nuget xunit
-nuget FsUnit.xUnit >= 3.1.0-beta2
 nuget Akka.Streams.TestKit
 nuget Akka.Cluster.TestKit
 nuget xunit.runner.visualstudio

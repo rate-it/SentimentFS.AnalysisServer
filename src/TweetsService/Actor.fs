@@ -38,6 +38,7 @@ module Actor =
     type Config = { credentials: TwitterCredentials; }
 
     let twitterApiActor(config: Config)(mailbox: Actor<TwitterApiActorMessage>) =
+        let credentials = Auth.SetUserCredentials(config.credentials.ConsumerKey, config.credentials.ConsumerSecret, config.credentials.AccessToken, config.credentials.AccessTokenSecret)
         let rec loop () =
             actor {
                 let! msg = mailbox.Receive()
