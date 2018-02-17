@@ -33,18 +33,6 @@ module TwitterApi =
             return! SearchAsync.SearchTweets(options) |> Async.AwaitTask
         }
 
-
-
-    let sentimentFlow (maxConcurentSentimentRequest)(sentimentActor: ICanTell<SentimentMessage>) =
-        Flow.id
-        |> Flow.asyncMapUnordered(maxConcurentSentimentRequest)(fun tweet ->
-                                                                    async {
-                                                                        let! s = sentimentActor <? SentimentCommand(Classify({ text = tweet.Text }))
-                                                                        let r = s.score |> Array.maxBy(fun res -> res.probability)
-                                                                        return { tweet with Sentiment = Some r.emotion }
-                                                                    }
-                                                                )
-
 module Actor =
     open Dto
     type Config = { credentials: TwitterCredentials; }
