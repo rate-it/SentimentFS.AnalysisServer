@@ -38,11 +38,12 @@ module Program =
         printf "%A" result
         let system = System.create "sentimentfs" <| (Configuration.load())
         spawn system Actors.sentimentRouter.Name <| Props<SentimentMessage>.From(Props.Empty.WithRouter(FromConfig.Instance)) |> ignore
+        let imMemoryStorageActorProps = props(inMemoryTweetsStorageActor)
         //let twitterApiActor = spawn system Actors.twitterApiActor.Name props()
-        let actor = spawn system Actors.tweetsActor.Name <| props (inMemoryTweetsStorageActor)
+        let actor = spawn system Actors.tweetsActor.Name <| props (tweetsMasterActor (imMemoryStorageActorProps)([imMemoryStorageActorProps]))
 
         async {
-            let! res = actor <? Search { key = "dupa"; since = Some DateTime.Now; quantity = Some 100  }
+            let! res = actor <? SearchByKey "dupa"
             printfn "%A" res
             return ()
         } |> Async.RunSynchronously
