@@ -101,8 +101,8 @@ module Actor =
                     do! Postgres.insertTweet(connection)(Dto.TweetDto.FromTweet(tweet))
                     return! loop()
                 | InsertMany tweetList ->
-                    for tweet in tweetList do
-                        mailbox.Self <! InsertOne tweet
+                    use connection = new NpgsqlConnection(connectionString)
+                    do! tweetList |> List.map(fun tweet -> Postgres.insertTweet(connection)(Dto.TweetDto.FromTweet(tweet))) |> Async.Parallel |> Async.Ignore
                     return! loop()
                 | Search q ->
                     return! loop()
