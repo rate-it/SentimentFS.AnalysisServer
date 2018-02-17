@@ -58,6 +58,11 @@ module Postgres =
             do! connection.ExecuteAsync("[SentimentFS].[InserTweet]", tweet, commandType = System.Nullable<CommandType>(CommandType.StoredProcedure)) |> Async.AwaitTask |> Async.Ignore
         }
 
+    let insertTweets (connection: #DbConnection)(tweets: TweetDto array) =
+        async {
+            do! connection.ExecuteAsync("[SentimentFS].[InserTweet]", tweets, commandType = System.Nullable<CommandType>(CommandType.StoredProcedure)) |> Async.AwaitTask |> Async.Ignore
+        }
+
     let serachByKey(connection: #DbConnection)(key: string) =
         async {
             let args = dict ["Key", key]

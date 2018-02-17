@@ -102,7 +102,7 @@ module Actor =
                     return! loop()
                 | InsertMany tweetList ->
                     use connection = new NpgsqlConnection(connectionString)
-                    do! tweetList |> List.map(fun tweet -> Postgres.insertTweet(connection)(Dto.TweetDto.FromTweet(tweet))) |> Async.Parallel |> Async.Ignore
+                    do! Postgres.insertTweets(connection)(tweetList |> List.map(fun tweet -> Dto.TweetDto.FromTweet(tweet)) |> List.toArray)
                     return! loop()
                 | Search q ->
                     return! loop()
