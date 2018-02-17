@@ -47,12 +47,22 @@ module Dto =
                                   TwitterUser = ""
                                   Sentiment = Emotion.Neutral }
 open Dto
+open System.Data
 
 module Postgres =
     open Dapper
     open System.Data.Common
 
-    let insertTweet (connection: #DbConnection)(tweet: TweetDto) = 2
+    let insertTweet (connection: #DbConnection)(tweet: TweetDto) =
+        async {
+            do! connection.ExecuteAsync("[SentimentFS].[InserTweet]", tweet, commandType = System.Nullable<CommandType>(CommandType.StoredProcedure)) |> Async.AwaitTask |> Async.Ignore
+        }
+
+    let serachByKey(connection: #DbConnection)(key: string) =
+        async {
+            let args = dict ["Key", key]
+            return! connection.QueryAsync<TweetDto>("[SentimentFS].[SearchTweetsByKey]", args, commandType = System.Nullable<CommandType>(CommandType.StoredProcedure)) |> Async.AwaitTask
+        }
 
 
 module Elastic =

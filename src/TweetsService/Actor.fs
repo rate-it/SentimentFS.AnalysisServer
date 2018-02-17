@@ -10,6 +10,7 @@ open Tweetinvi
 open SentimentFS.AnalysisServer.Common.Messages.Sentiment
 open Akkling
 open Akkling.Streams
+open Npgsql
 
 module Actors =
     open Common.Routing.ActorMetaData
@@ -91,23 +92,22 @@ module Actor =
         loop([])
 
     let postgresTweetsStorageActor(connectionString: string)(mailbox: Actor<TweetsStorageActorMessage>) =
-        let rec loop (tweets: TweetDto list) =
+        let rec loop () =
             actor {
                 let! msg = mailbox.Receive()
                 match msg with
                 | InsertOne tweet ->
-                    return! loop(Dto.TweetDto.FromTweet(tweet) :: tweets)
+                    use connection = new NpgsqlConnection(connectionString)
+                    do! Postgres.insertTweet(connection)(Dto.TweetDto.FromTweet(tweet))
+                    return! loop()
                 | InsertMany tweetList ->
-                    return! loop((tweetList |> List.map(fun tweet -> Dto.TweetDto.FromTweet(tweet))) @ tweets)
+                    for tweet in tweetList do
+                        mailbox.Self <! InsertOne tweet
+                    return! loop()
                 | Search q ->
-                    let result = tweets |> List.filter(fun x -> x.Text.Contains(q.key)) |> List.map(TweetDto.ToTweet) |> List.toSeq
-                    if result |> Seq.isEmpty then
-                        mailbox.Sender() <! None
-                    else
-                        mailbox.Sender() <! Some result
-                    return! loop(tweets)
+                    return! loop()
             }
-        loop([])
+        loop()
 
     let tweetsMasterActor(readActorProps: Props<TweetsStorageActorMessage>)(writeActorsProps: Props<TweetsStorageActorMessage> list)(mailbox: Actor<TweetsActorMessage>) =
         let tweetReadActor = spawnAnonymous mailbox.System readActorProps
