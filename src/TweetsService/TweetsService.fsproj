@@ -8,6 +8,7 @@
     <Compile Include="Actor.fs" />
     <Compile Include="Program.fs" />
     <None Include="App.config" />
+    <None Include="Postgres.fsx" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Common\Common.fsproj" />

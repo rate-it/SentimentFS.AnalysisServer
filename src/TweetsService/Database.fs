@@ -5,11 +5,10 @@ open SentimentFS.AnalysisServer.Common.Messages.Twitter
 open Nest
 
 module Dto =
-    open System.ComponentModel.DataAnnotations
     
     [<CLIMutable>]
-    type TweetDto = { [<Key>]IdStr: string
-                      [<>]Text: string
+    type TweetDto = { IdStr: string
+                      Text: string
                       CreationDate: DateTime
                       Lang: string
                       Longitude: double
