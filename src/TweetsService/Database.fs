@@ -5,10 +5,11 @@ open SentimentFS.AnalysisServer.Common.Messages.Twitter
 open Nest
 
 module Dto =
-
+    open System.ComponentModel.DataAnnotations
+    
     [<CLIMutable>]
-    type TweetDto = { IdStr: string
-                      Text: string
+    type TweetDto = { [<Key>]IdStr: string
+                      [<>]Text: string
                       CreationDate: DateTime
                       Lang: string
                       Longitude: double
@@ -42,31 +43,30 @@ module Dto =
                                   Latitude = 0.0
                                   TwitterUser = ""
                                   Sentiment = Emotion.Neutral }
-open Dto
-open System.Data
-open Npgsql
 
 module Postgres =
     open Dapper
-    open System.Data.Common
+    open Npgsql
+    open Dto
+    open System.Data
 
     let insertTweet (connectionString: string)(tweet: TweetDto) =
         async {
             use connection = new NpgsqlConnection(connectionString)
-            do! connection.ExecuteAsync("[sentimentfs].[insert_tweet]", tweet, commandType = System.Nullable<CommandType>(CommandType.StoredProcedure)) |> Async.AwaitTask |> Async.Ignore
+            do! connection.ExecuteAsync("sentimentfs.insert_tweet", tweet, commandType = System.Nullable<CommandType>(CommandType.StoredProcedure)) |> Async.AwaitTask |> Async.Ignore
         }
 
     let insertTweets (connectionString: string)(tweets: TweetDto array) =
         async {
             use connection = new NpgsqlConnection(connectionString)
-            do! connection.ExecuteAsync("[sentimentfs].[insert_tweet]", tweets, commandType = System.Nullable<CommandType>(CommandType.StoredProcedure)) |> Async.AwaitTask |> Async.Ignore
+            do! connection.ExecuteAsync("sentimentfs.insert_tweet", tweets, commandType = System.Nullable<CommandType>(CommandType.StoredProcedure)) |> Async.AwaitTask |> Async.Ignore
         }
 
     let serachByKey(connectionString: string)(key: string) =
         async {
             use connection = new NpgsqlConnection(connectionString)
             let args = dict ["Key", key]
-            return! connection.QueryAsync<TweetDto>("[sentimentfs].[SearchTweetsByKey]", args, commandType = System.Nullable<CommandType>(CommandType.StoredProcedure)) |> Async.AwaitTask
+            return! connection.QueryAsync<TweetDto>("sentimentfs.search_tweets_by_key", args, commandType = System.Nullable<CommandType>(CommandType.StoredProcedure)) |> Async.AwaitTask
         }
 
 

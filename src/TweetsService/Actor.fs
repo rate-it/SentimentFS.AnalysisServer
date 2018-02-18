@@ -60,7 +60,6 @@ module Actor =
                             |> Source.asyncMapUnordered(500)(fun tweet ->
                                                                     async {
                                                                         let! s = sentimentActor <? SentimentCommand(Classify({ text = tweet.Text }))
-                                                                        printfn "%A" s
                                                                         let r = s.score |> Array.maxBy(fun res -> res.probability)
                                                                         return { tweet with Sentiment = Some r.emotion }
                                                                     }
@@ -77,13 +76,10 @@ module Actor =
                 let! msg = mailbox.Receive()
                 match msg with
                 | InsertOne tweet ->
-                    printfn "Insert One %A" tweet
                     return! loop(Dto.TweetDto.FromTweet(tweet) :: tweets)
                 | InsertMany tweetList ->
-                    printfn "Insert many %A" tweetList
                     return! loop((tweetList |> List.map(fun tweet -> Dto.TweetDto.FromTweet(tweet))) @ tweets)
                 | Search q ->
-                    printfn "Search by %A" q
                     let result = tweets |> List.filter(fun x -> x.Text.Contains(q.key)) |> List.map(TweetDto.ToTweet) |> List.toSeq
                     if result |> Seq.isEmpty then
                         mailbox.Sender() <! None
@@ -138,7 +134,7 @@ module Actor =
                     return! loop()
                 | Save tweets ->
                     for writeActor in writeActors do
-                        writeActor <! InsertMany tweets
+                        writeActor <! InsertOne (tweets |> Seq.head)
                     return loop()
 
             }
