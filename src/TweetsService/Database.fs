@@ -65,7 +65,18 @@ module Postgres =
         async {
             use connection = new NpgsqlConnection(connectionString)
             let args = dict ["Key", key]
-            return! connection.QueryAsync<TweetDto>("sentimentfs.search_tweets_by_key", args, commandType = System.Nullable<CommandType>(CommandType.StoredProcedure)) |> Async.AwaitTask
+            return! connection.QueryAsync<TweetDto>("""
+                                                        SELECT
+                                                          idstr,
+                                                          text,
+                                                          creationdate,
+                                                          lang,
+                                                          longitude,
+                                                          latitude,
+                                                          twitteruser,
+                                                          sentiment
+                                                        FROM sentimentfs.tweets WHERE text @@ to_tsquery(@Key);
+                                                    """, args) |> Async.AwaitTask
         }
 
 
