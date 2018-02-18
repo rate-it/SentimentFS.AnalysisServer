@@ -9,8 +9,7 @@ module Dto =
     [<CLIMutable>]
     type TweetDto = { IdStr: string
                       Text: string
-                      HashTags: string seq
-                      Date: DateTime
+                      CreationDate: DateTime
                       Lang: string
                       Longitude: double
                       Latitude: double
@@ -18,9 +17,8 @@ module Dto =
                       Sentiment: Emotion } with
         static member FromTweet(x: Tweet) =
             { IdStr = x.IdStr
-              HashTags = x.HashTags
               Text = x.Text
-              Date = x.CreationDate
+              CreationDate = x.CreationDate
               Lang = x.Language
               Longitude = match x.Coordinates with | Some c -> c.Longitude | None -> 0.0
               Latitude = match x.Coordinates with | Some c -> c.Latitude | None -> 0.0
@@ -29,9 +27,8 @@ module Dto =
             }
         static member ToTweet(x: TweetDto):Tweet =
             { IdStr = x.IdStr
-              HashTags = x.HashTags
               Text = x.Text
-              CreationDate = x.Date
+              CreationDate = x.CreationDate
               Language = x.Lang
               Coordinates = if x.Longitude = 0.0 && x.Latitude = 0.0 then None else Some { Longitude = x.Longitude; Latitude = x.Latitude }
               User = x.TwitterUser
@@ -39,8 +36,7 @@ module Dto =
             }
         static member Zero () = { IdStr = ""
                                   Text = ""
-                                  HashTags = [|""|]
-                                  Date = DateTime.Now
+                                  CreationDate = DateTime.Now
                                   Lang = ""
                                   Longitude = 0.0
                                   Latitude = 0.0
@@ -55,18 +51,18 @@ module Postgres =
 
     let insertTweet (connection: #DbConnection)(tweet: TweetDto) =
         async {
-            do! connection.ExecuteAsync("[SentimentFS].[InserTweet]", tweet, commandType = System.Nullable<CommandType>(CommandType.StoredProcedure)) |> Async.AwaitTask |> Async.Ignore
+            do! connection.ExecuteAsync("[sentimentfs].[insert_tweet]", tweet, commandType = System.Nullable<CommandType>(CommandType.StoredProcedure)) |> Async.AwaitTask |> Async.Ignore
         }
 
     let insertTweets (connection: #DbConnection)(tweets: TweetDto array) =
         async {
-            do! connection.ExecuteAsync("[SentimentFS].[InserTweet]", tweets, commandType = System.Nullable<CommandType>(CommandType.StoredProcedure)) |> Async.AwaitTask |> Async.Ignore
+            do! connection.ExecuteAsync("[sentimentfs].[InserTweet]", tweets, commandType = System.Nullable<CommandType>(CommandType.StoredProcedure)) |> Async.AwaitTask |> Async.Ignore
         }
 
     let serachByKey(connection: #DbConnection)(key: string) =
         async {
             let args = dict ["Key", key]
-            return! connection.QueryAsync<TweetDto>("[SentimentFS].[SearchTweetsByKey]", args, commandType = System.Nullable<CommandType>(CommandType.StoredProcedure)) |> Async.AwaitTask
+            return! connection.QueryAsync<TweetDto>("[sentimentfs].[SearchTweetsByKey]", args, commandType = System.Nullable<CommandType>(CommandType.StoredProcedure)) |> Async.AwaitTask
         }
 
 

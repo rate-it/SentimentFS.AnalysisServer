@@ -55,7 +55,6 @@ module Actor =
                                                          Language = tweet.Language.ToString();
                                                          CreationDate = tweet.CreatedAt;
                                                          Coordinates = match tweet.Coordinates with null -> None | coord -> Some { Longitude = coord.Longitude; Latitude = coord.Latitude };
-                                                         HashTags = (tweet.Hashtags |> Seq.map(fun x -> x.Text))
                                                          User = tweet.CreatedBy.UserDTO.Name
                                                          Sentiment = None })
                             |> Source.asyncMapUnordered(500)(fun tweet ->
@@ -78,10 +77,13 @@ module Actor =
                 let! msg = mailbox.Receive()
                 match msg with
                 | InsertOne tweet ->
+                    printfn "Insert One %A" tweet
                     return! loop(Dto.TweetDto.FromTweet(tweet) :: tweets)
                 | InsertMany tweetList ->
+                    printfn "Insert many %A" tweetList
                     return! loop((tweetList |> List.map(fun tweet -> Dto.TweetDto.FromTweet(tweet))) @ tweets)
                 | Search q ->
+                    printfn "Search by %A" q
                     let result = tweets |> List.filter(fun x -> x.Text.Contains(q.key)) |> List.map(TweetDto.ToTweet) |> List.toSeq
                     if result |> Seq.isEmpty then
                         mailbox.Sender() <! None
@@ -105,6 +107,12 @@ module Actor =
                     do! Postgres.insertTweets(connection)(tweetList |> List.map(fun tweet -> Dto.TweetDto.FromTweet(tweet)) |> List.toArray)
                     return! loop()
                 | Search q ->
+                    use connection = new NpgsqlConnection(connectionString)
+                    let! result = Postgres.serachByKey(connection)(q.key)
+                    if result |> Seq.isEmpty then
+                        mailbox.Sender() <! Some result
+                    else
+                        mailbox.Sender() <! None
                     return! loop()
             }
         loop()

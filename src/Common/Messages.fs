@@ -43,7 +43,6 @@ module Twitter =
 
     type Tweet = { IdStr: string
                    Text: string
-                   HashTags: string seq
                    CreationDate: DateTime
                    Language: string
                    Coordinates: Coordinates option
