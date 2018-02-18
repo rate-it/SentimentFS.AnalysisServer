@@ -5,7 +5,7 @@ open SentimentFS.AnalysisServer.Common.Messages.Twitter
 open Nest
 
 module Dto =
-    
+
     [<CLIMutable>]
     type TweetDto = { IdStr: string
                       Text: string
@@ -52,13 +52,13 @@ module Postgres =
     let insertTweet (connectionString: string)(tweet: TweetDto) =
         async {
             use connection = new NpgsqlConnection(connectionString)
-            do! connection.ExecuteAsync("sentimentfs.insert_tweet", tweet, commandType = System.Nullable<CommandType>(CommandType.StoredProcedure)) |> Async.AwaitTask |> Async.Ignore
+            do! connection.ExecuteAsync("INSERT INTO sentimentfs.tweets(idstr, text, creationdate, lang, longitude, latitude, twitteruser, sentiment) VALUES(@IdStr, @Text, @CreationDate, @Lang, @Longitude, @Latitude, @TwitterUser, @Sentiment);", tweet) |> Async.AwaitTask |> Async.Ignore
         }
 
     let insertTweets (connectionString: string)(tweets: TweetDto array) =
         async {
             use connection = new NpgsqlConnection(connectionString)
-            do! connection.ExecuteAsync("sentimentfs.insert_tweet", tweets, commandType = System.Nullable<CommandType>(CommandType.StoredProcedure)) |> Async.AwaitTask |> Async.Ignore
+            do! connection.ExecuteAsync("INSERT INTO sentimentfs.tweets(idstr, text, creationdate, lang, longitude, latitude, twitteruser, sentiment) VALUES(@IdStr, @Text, @CreationDate, @Lang, @Longitude, @Latitude, @TwitterUser, @Sentiment);", tweets) |> Async.AwaitTask |> Async.Ignore
         }
 
     let serachByKey(connectionString: string)(key: string) =
