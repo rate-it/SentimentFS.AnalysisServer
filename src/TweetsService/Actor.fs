@@ -107,9 +107,9 @@ module Actor =
                 | Search q ->
                     let! result = Postgres.serachByKey(connectionString)(q.key)
                     if result |> Seq.isEmpty then
-                        mailbox.Sender() <! Some (result |> Seq.map(TweetDto.ToTweet))
-                    else
                         mailbox.Sender() <! None
+                    else
+                        mailbox.Sender() <! Some (result |> Seq.map(TweetDto.ToTweet))
                     return! loop()
             }
         loop()
