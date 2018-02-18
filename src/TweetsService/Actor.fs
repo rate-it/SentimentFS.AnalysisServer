@@ -29,8 +29,7 @@ module TwitterApi =
             options.SearchType <- Nullable<SearchResultType>(SearchResultType.Recent)
             options.Lang <- Nullable<LanguageFilter>(LanguageFilter.English)
             options.Filters <- TweetSearchFilters.None
-            options.MaximumNumberOfResults <- 10
-            options.Since <- DateTime.Now
+            options.MaximumNumberOfResults <- defaultArg q.quantity 1000
             return! SearchAsync.SearchTweets(options) |> Async.AwaitTask
         }
 
@@ -66,7 +65,7 @@ module Actor =
                                                                 )
                             |> Source.runWith (mailbox.System.Materializer()) (Sink.fold ([]) ( fun acc x -> x :: acc))
 
-                    mailbox.Sender() <! tweets
+                    mailbox.Sender() <! Save tweets
                     return loop()
             }
         loop()
@@ -120,6 +119,7 @@ module Actor =
     let tweetsMasterActor(readActorProps: Props<TweetsStorageActorMessage>)(writeActorsProps: Props<TweetsStorageActorMessage> list)(mailbox: Actor<TweetsActorMessage>) =
         let tweetReadActor = spawnAnonymous mailbox.System readActorProps
         let writeActors = writeActorsProps |> List.map(fun prop -> spawnAnonymous mailbox.System prop)
+
         let rec loop () =
             actor {
                 let! msg = mailbox.Receive()
@@ -130,6 +130,8 @@ module Actor =
                     | Some tweets ->
                         mailbox.Sender() <! tweets
                     | None ->
+                        let twitterApiActor:TypedActorSelection<TwitterApiActorMessage> = select mailbox.System (Actors.twitterApiActor.Path)
+                        twitterApiActor <! ApiSearch { key = key; quantity = Some 1000; since = None}
                         mailbox.Sender() <! Seq.empty
                     return! loop()
                 | Save tweets ->

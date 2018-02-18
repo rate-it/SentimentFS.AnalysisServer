@@ -41,11 +41,12 @@ module Program =
         let system = System.create "sentimentfs" <| (Configuration.load())
         spawn system Actors.sentimentRouter.Name <| Props<SentimentMessage>.From(Props.Empty.WithRouter(FromConfig.Instance)) |> ignore
         let imMemoryStorageActorProps = props(inMemoryTweetsStorageActor)
+        let postgresqlStorageActorProps = props(postgresTweetsStorageActor(result.GetResult PostgresConnectionString))
         let twitterApiActor = spawn system Actors.twitterApiActor.Name <| props(twitterApiActor({ credentials = new Tweetinvi.Models.TwitterCredentials() }))
-        let actor = spawn system Actors.tweetsActor.Name <| props (tweetsMasterActor (imMemoryStorageActorProps)([imMemoryStorageActorProps]))
+        let actor = spawn system Actors.tweetsActor.Name <| props (tweetsMasterActor (imMemoryStorageActorProps)([imMemoryStorageActorProps; postgresqlStorageActorProps]))
 
         async {
-            let! res = actor <? SearchByKey "dupa"
+            let! res = actor <? SearchByKey "fsharp"
             printfn "%A" res
             return ()
         } |> Async.RunSynchronously
