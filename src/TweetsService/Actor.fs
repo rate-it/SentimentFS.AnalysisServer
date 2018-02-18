@@ -38,13 +38,14 @@ module Actor =
     type Config = { credentials: TwitterCredentials; }
 
     let twitterApiActor(config: Config)(mailbox: Actor<TwitterApiActorMessage>) =
-        let credentials = Auth.SetUserCredentials(config.credentials.ConsumerKey, config.credentials.ConsumerSecret, config.credentials.AccessToken, config.credentials.AccessTokenSecret)
+        let credentials = Auth.SetCredentials(config.credentials)
         let rec loop () =
             actor {
                 let! msg = mailbox.Receive()
                 match msg with
                 | ApiSearch search ->
                     let sentimentActor:TypedActorSelection<SentimentMessage> = select mailbox.System (Actors.sentimentRouter.Path)
+                    let twitterApiActor: TypedActorSelection<TweetsActorMessage> = select mailbox.System (Actors.tweetsActor.Path)
                     let! tweets =
                         Source.ofAsync (TwitterApi.downloadTweetsFromApi search)
                             |> Source.collect(id)
@@ -59,13 +60,13 @@ module Actor =
                             |> Source.asyncMapUnordered(500)(fun tweet ->
                                                                     async {
                                                                         let! s = sentimentActor <? SentimentCommand(Classify({ text = tweet.Text }))
+                                                                        printfn "%A" s
                                                                         let r = s.score |> Array.maxBy(fun res -> res.probability)
                                                                         return { tweet with Sentiment = Some r.emotion }
                                                                     }
                                                                 )
                             |> Source.runWith (mailbox.System.Materializer()) (Sink.fold ([]) ( fun acc x -> x :: acc))
-
-                    mailbox.Sender() <! Save tweets
+                    twitterApiActor <! Save tweets
                     return loop()
             }
         loop()
@@ -98,16 +99,17 @@ module Actor =
                 let! msg = mailbox.Receive()
                 match msg with
                 | InsertOne tweet ->
-                    use connection = new NpgsqlConnection(connectionString)
-                    do! Postgres.insertTweet(connection)(Dto.TweetDto.FromTweet(tweet))
+                    do! Postgres.insertTweet(connectionString)(Dto.TweetDto.FromTweet(tweet))
                     return! loop()
                 | InsertMany tweetList ->
-                    use connection = new NpgsqlConnection(connectionString)
-                    do! Postgres.insertTweets(connection)(tweetList |> List.map(fun tweet -> Dto.TweetDto.FromTweet(tweet)) |> List.toArray)
-                    return! loop()
+                    match tweetList with
+                    | [] ->
+                        return! loop()
+                    | list ->
+                        do! Postgres.insertTweets(connectionString)(list |> List.map(fun tweet -> Dto.TweetDto.FromTweet(tweet)) |> List.toArray)
+                        return! loop()
                 | Search q ->
-                    use connection = new NpgsqlConnection(connectionString)
-                    let! result = Postgres.serachByKey(connection)(q.key)
+                    let! result = Postgres.serachByKey(connectionString)(q.key)
                     if result |> Seq.isEmpty then
                         mailbox.Sender() <! Some result
                     else

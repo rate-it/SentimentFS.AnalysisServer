@@ -44,23 +44,27 @@ module Dto =
                                   Sentiment = Emotion.Neutral }
 open Dto
 open System.Data
+open Npgsql
 
 module Postgres =
     open Dapper
     open System.Data.Common
 
-    let insertTweet (connection: #DbConnection)(tweet: TweetDto) =
+    let insertTweet (connectionString: string)(tweet: TweetDto) =
         async {
+            use connection = new NpgsqlConnection(connectionString)
             do! connection.ExecuteAsync("[sentimentfs].[insert_tweet]", tweet, commandType = System.Nullable<CommandType>(CommandType.StoredProcedure)) |> Async.AwaitTask |> Async.Ignore
         }
 
-    let insertTweets (connection: #DbConnection)(tweets: TweetDto array) =
+    let insertTweets (connectionString: string)(tweets: TweetDto array) =
         async {
-            do! connection.ExecuteAsync("[sentimentfs].[InserTweet]", tweets, commandType = System.Nullable<CommandType>(CommandType.StoredProcedure)) |> Async.AwaitTask |> Async.Ignore
+            use connection = new NpgsqlConnection(connectionString)
+            do! connection.ExecuteAsync("[sentimentfs].[insert_tweet]", tweets, commandType = System.Nullable<CommandType>(CommandType.StoredProcedure)) |> Async.AwaitTask |> Async.Ignore
         }
 
-    let serachByKey(connection: #DbConnection)(key: string) =
+    let serachByKey(connectionString: string)(key: string) =
         async {
+            use connection = new NpgsqlConnection(connectionString)
             let args = dict ["Key", key]
             return! connection.QueryAsync<TweetDto>("[sentimentfs].[SearchTweetsByKey]", args, commandType = System.Nullable<CommandType>(CommandType.StoredProcedure)) |> Async.AwaitTask
         }
