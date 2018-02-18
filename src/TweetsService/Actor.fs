@@ -134,7 +134,7 @@ module Actor =
                     return! loop()
                 | Save tweets ->
                     for writeActor in writeActors do
-                        writeActor <! InsertOne (tweets |> Seq.head)
+                        writeActor <! InsertMany tweets
                     return loop()
 
             }
