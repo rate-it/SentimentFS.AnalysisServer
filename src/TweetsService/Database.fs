@@ -64,7 +64,8 @@ module Postgres =
     let serachByKey(connectionString: string)(key: string) =
         async {
             use connection = new NpgsqlConnection(connectionString)
-            let args = dict ["Key", key]
+            let args = DynamicParameters()
+            args.Add("@Key", key)
             return! connection.QueryAsync<TweetDto>("""
                                                         SELECT
                                                           idstr,

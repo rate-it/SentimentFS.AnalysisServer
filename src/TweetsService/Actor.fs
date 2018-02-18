@@ -107,7 +107,7 @@ module Actor =
                 | Search q ->
                     let! result = Postgres.serachByKey(connectionString)(q.key)
                     if result |> Seq.isEmpty then
-                        mailbox.Sender() <! Some result
+                        mailbox.Sender() <! Some (result |> Seq.map(TweetDto.ToTweet))
                     else
                         mailbox.Sender() <! None
                     return! loop()
@@ -125,7 +125,7 @@ module Actor =
                 | SearchByKey key ->
                     let! tweetsOpt = tweetReadActor <? TweetsStorageActorMessage.Search({ key = key; since = None; quantity = None })
                     match tweetsOpt with
-                    | Some tweets ->
+                    | Some (tweets: Common.Messages.Twitter.Tweet seq) ->
                         mailbox.Sender() <! tweets
                     | None ->
                         let twitterApiActor:TypedActorSelection<TwitterApiActorMessage> = select mailbox.System (Actors.twitterApiActor.Path)

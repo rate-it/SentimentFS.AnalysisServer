@@ -36,14 +36,13 @@ module Program =
     let main _ =
         let parser = ArgumentParser.Create<ServiceConfig>(programName = "TweetsService.exe")
         let result = parser.Parse()
-        let cosnumerKey = result.GetResult(ConsumerKey, defaultValue = "")
         let twitterCredentials = Tweetinvi.Models.TwitterCredentials(result.GetResult ConsumerKey, result.GetResult ConsumerSecret, result.GetResult AccessToken, result.GetResult AccessTokenSecret)
         let system = System.create "sentimentfs" <| (Configuration.load())
         spawn system Actors.sentimentRouter.Name <| Props<SentimentMessage>.From(Props.Empty.WithRouter(FromConfig.Instance)) |> ignore
         let imMemoryStorageActorProps = props(inMemoryTweetsStorageActor)
         let postgresqlStorageActorProps = props(postgresTweetsStorageActor(result.GetResult PostgresConnectionString))
         let twitterApiActor = spawn system Actors.twitterApiActor.Name <| props(twitterApiActor({ credentials = twitterCredentials }))
-        let actor = spawn system Actors.tweetsActor.Name <| props (tweetsMasterActor (imMemoryStorageActorProps)([imMemoryStorageActorProps; postgresqlStorageActorProps]))
+        let actor = spawn system Actors.tweetsActor.Name <| props (tweetsMasterActor (postgresqlStorageActorProps)([postgresqlStorageActorProps]))
 
         async {
             let! res = actor <? SearchByKey "fsharp"
