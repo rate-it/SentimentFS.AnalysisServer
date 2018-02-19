@@ -19,6 +19,30 @@ services:
         dockerfile: Dockerfile
     ports:
         - "5002:5002"
+    networks:
+        - sentimentfs
+  postgres:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: postgres
+    ports:
+        - "5432:5432"
+    networks:
+        - sentimentfs
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:6.2.1
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    networks:
+        - sentimentfs
+  kibana: 
+    image: docker.elastic.co/kibana/kibana:6.2.1
+    ports:
+      - 5601:5601
+    networks:
+        - sentimentfs
 
 networks:
     sentimentfs:
