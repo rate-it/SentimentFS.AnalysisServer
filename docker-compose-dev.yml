@@ -12,7 +12,7 @@ services:
     ports:
       - "9200:9200"
       - "9300:9300"
-  kibana: 
+  kibana:
     image: docker.elastic.co/kibana/kibana:6.2.1
     ports:
       - 5601:5601
